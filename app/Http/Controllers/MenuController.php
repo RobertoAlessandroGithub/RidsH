@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use App\Models\Category;
+
 
 class MenuController extends Controller
 {
@@ -12,7 +14,8 @@ class MenuController extends Controller
      */
     public function index()
     {
-        //
+       $menu = Menu::all();
+       return view("Customer.menu-list")->with("menu", $menu);
     }
 
     /**
