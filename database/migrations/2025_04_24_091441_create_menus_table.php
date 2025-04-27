@@ -14,13 +14,18 @@ return new class extends Migration
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->text('name')->nullable();
+            $table->text('description')->nullable();
+            $table->decimal('price', 8, 2);
+            $table->string('image')->nullable();
+            // $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+    public function down(): voida
     {
         Schema::dropIfExists('menus');
     }

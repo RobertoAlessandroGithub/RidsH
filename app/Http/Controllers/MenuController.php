@@ -6,7 +6,6 @@ use App\Models\Menu;
 use Illuminate\Http\Request;
 use App\Models\Category;
 
-
 class MenuController extends Controller
 {
     /**
@@ -14,8 +13,11 @@ class MenuController extends Controller
      */
     public function index()
     {
-       $menu = Menu::all();
-       return view("Customer.menu-list")->with("menu", $menu);
+       // Mengambil semua data menu dari database
+       $menus = Menu::all();
+        
+       // Mengembalikan view dengan data menus
+       return view('Customer.menu-card', compact('menus'));
     }
 
     /**
@@ -23,7 +25,7 @@ class MenuController extends Controller
      */
     public function create()
     {
-        //
+        return view('Customer.create-menu');
     }
 
     /**
@@ -31,7 +33,16 @@ class MenuController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+            'price' => 'required|numeric',
+            'image' => 'nullable|url', // Validasi untuk URL gambar
+        ]);
+
+        Menu::create($request->all());
+
+        return redirect('/menu')->with('success', 'Menu berhasil ditambahkan!');
     }
 
     /**

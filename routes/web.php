@@ -13,6 +13,8 @@ Route::get('/dashboard', function () {
 
 // routes/web.php
 Route::get('/menu', [\App\Http\Controllers\MenuController::class, 'index'])->name('menu');
+Route::get('/create', [\App\Http\Controllers\MenuController::class, 'create'])->name('create');
+Route::post('/menu', [\App\Http\Controllers\MenuController::class, 'store']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
