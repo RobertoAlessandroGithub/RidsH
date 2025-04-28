@@ -13,11 +13,8 @@ class MenuController extends Controller
      */
     public function index()
     {
-       // Mengambil semua data menu dari database
-       $menus = Menu::all();
-        
-       // Mengembalikan view dengan data menus
-       return view('Customer.menu-card', compact('menus'));
+        $menus = Menu::all();
+        return view('menu.menu-card', compact('menus'));
     }
 
     /**
@@ -25,7 +22,7 @@ class MenuController extends Controller
      */
     public function create()
     {
-        return view('Customer.create-menu');
+        return view('menu.create-menu');
     }
 
     /**
@@ -33,16 +30,27 @@ class MenuController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'price' => 'required|numeric',
-            'image' => 'nullable|url', // Validasi untuk URL gambar
-        ]);
-
-        Menu::create($request->all());
-
-        return redirect('/menu')->with('success', 'Menu berhasil ditambahkan!');
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+        
+            // Handle file upload
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('menu_images', 'public');
+                $validatedData['image'] = $imagePath;
+            }
+        
+            // Simpan data ke database
+            Menu::create($validatedData);
+        
+            return redirect('/menu')->with('success', 'Menu berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal menyimpan menu: '.$e->getMessage());
+        }
     }
 
     /**
@@ -50,7 +58,7 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
-        //
+        return view('menu.show', compact('menu'));
     }
 
     /**
@@ -58,7 +66,7 @@ class MenuController extends Controller
      */
     public function edit(Menu $menu)
     {
-        //
+        return view('menu.edit', compact('menu'));
     }
 
     /**
@@ -66,14 +74,54 @@ class MenuController extends Controller
      */
     public function update(Request $request, Menu $menu)
     {
-        //
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+            
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama jika ada
+                if ($menu->image) {
+                    Storage::delete($menu->image);
+                }
+                
+                $imagePath = $request->file('image')->store('menu_images', 'public');
+                $validatedData['image'] = $imagePath;
+            }
+            
+            $menu->update($validatedData);
+            
+            return redirect('/menu')->with('success', 'Menu berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal memperbarui menu: '.$e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Menu $menu)
-    {
-        //
-    }
+
+     public function destroy(Menu $menu)
+     {
+         try {
+             // Hapus gambar dari folder public jika ada
+             if ($menu->image && file_exists(public_path($menu->image))) {
+                 unlink(public_path($menu->image));
+             }
+             
+             $menu->delete();
+             
+             return redirect('/menu')->with('success', 'Menu berhasil dihapus!');
+            } catch (\Exception $e) {
+                return back()->withInput()->with('error', 'Gagal menghapus menu: '.$e->getMessage());
+            }
+     }
+    public function deleteView()
+{
+    $menus = Menu::latest()->get();
+    return view('menu.delete-menu', compact('menus'));
+}
 }

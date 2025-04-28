@@ -22,4 +22,10 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    <Directory "D:\project\RidsH\storage\menu_images">
+    AllowOverride All
+    Require all granted
+    </Directory>
+
 </IfModule>
