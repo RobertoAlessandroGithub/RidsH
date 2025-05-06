@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage; // ini perlu ditambah biar Storage::delete() gak error
 
 class MenuController extends Controller
 {
@@ -38,13 +38,11 @@ class MenuController extends Controller
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
         
-            // Handle file upload
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('menu_images', 'public');
                 $validatedData['image'] = $imagePath;
             }
         
-            // Simpan data ke database
             Menu::create($validatedData);
         
             return redirect('/menu')->with('success', 'Menu berhasil ditambahkan!');
@@ -83,11 +81,9 @@ class MenuController extends Controller
             ]);
             
             if ($request->hasFile('image')) {
-                // Hapus gambar lama jika ada
                 if ($menu->image) {
                     Storage::delete($menu->image);
                 }
-                
                 $imagePath = $request->file('image')->store('menu_images', 'public');
                 $validatedData['image'] = $imagePath;
             }
@@ -103,25 +99,22 @@ class MenuController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-
-     public function destroy(Menu $menu)
-     {
-         try {
-             // Hapus gambar dari folder public jika ada
-             if ($menu->image && file_exists(public_path($menu->image))) {
-                 unlink(public_path($menu->image));
-             }
-             
-             $menu->delete();
-             
-             return redirect('/menu')->with('success', 'Menu berhasil dihapus!');
-            } catch (\Exception $e) {
-                return back()->withInput()->with('error', 'Gagal menghapus menu: '.$e->getMessage());
+    public function destroy(Menu $menu)
+    {
+        try {
+            if ($menu->image && file_exists(public_path($menu->image))) {
+                unlink(public_path($menu->image));
             }
-     }
+            $menu->delete();
+            return redirect('/menu')->with('success', 'Menu berhasil dihapus!');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal menghapus menu: '.$e->getMessage());
+        }
+    }
+
     public function deleteView()
-{
-    $menus = Menu::latest()->get();
-    return view('menu.delete-menu', compact('menus'));
-}
+    {
+        $menus = Menu::latest()->get();
+        return view('menu.delete-menu', compact('menus'));
+    }
 }

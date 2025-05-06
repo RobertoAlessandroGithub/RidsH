@@ -9,10 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('table_number');
+            $table->json('cart_items'); // Menyimpan item keranjang dalam format JSON
+            $table->decimal('total_price', 10, 2);
             $table->timestamps();
         });
     }
