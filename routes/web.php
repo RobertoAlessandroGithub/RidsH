@@ -8,10 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 Route::resource('menu', MenuController::class);
 
-//buat login admin
-Route::get('/login', [\App\Http\Controllers\AuthController::class, 'login'])->name('login');
-Route::post('/login', [\App\Http\Controllers\AuthController::class, 'authenticate'])->name('login.post');
-
 Route::middleware(['admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
@@ -21,8 +17,8 @@ Route::middleware(['admin'])->group(function () {
 // Authentication Routes
 Route::get('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login');
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'authenticate'])->name('login.post');
-Route::get('/register', [App\Http\Controllers\AuthController::class, 'register'])->name('register');
-Route::post('/register', [App\Http\Controllers\AuthController::class, 'registerPost'])->name('register.post');
+Route::get('/register', [App\Http\Controllers\RegisteredUserController::class, 'create'])->name('register');
+Route::post('/register', [App\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.post');
 
 
 //logout
@@ -31,9 +27,6 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
-//register
-Route::get('/register', [\App\Http\Controllers\AuthController::class, 'register'])->name('register');
-Route::post('/register', [\App\Http\Controllers\AuthController::class, 'registerPost'])->name('register.post');
 
 
 Route::get('/', function () {

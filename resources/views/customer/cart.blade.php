@@ -83,7 +83,7 @@
         </div>
     @else
         <div class="alert alert-info text-center">
-            Keranjang Anda kosong. <a href="/" class="text-decoration-none fw-bold">Belanja dulu yuk!</a>
+            Keranjang Anda kosong. <a href="/menu" class="text-decoration-none fw-bold">Belanja dulu yuk!</a>
         </div>
     @endif
 </div>
