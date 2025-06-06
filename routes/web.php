@@ -43,21 +43,8 @@ Route::middleware(['admin'])->group(function () {
 // Authentication Routes
 Route::get('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login');
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'authenticate'])->name('login.post');
-Route::get('/register', [App\Http\Controllers\RegisteredUserController::class, 'create'])->name('register');
-Route::post('/register', [App\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.post');
-
-
-//logout
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/login');
-})->name('logout');
-
-
-
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/register', [App\Http\Controllers\RegisteredUserController::class, 'create'])->name('register');
+// Route::post('/register', [App\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.post');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
