@@ -146,7 +146,7 @@
                             <td>Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
                             <td>{{ $order->created_at->format('d-m-Y H:i:s') }}</td>
                             <td>
-                                <button class="btn btn-sm btn-success checklist-btn" data-order-id="{{ $order->id }}">✔ Checklist</button>
+                                <button class="btn btn-sm btn-success checklist-btn" data-order-id="{{ $order->id }}">✔ Menunggu Pesanan </button>
                             </td>
                         </tr>
                     @endforeach

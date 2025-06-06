@@ -15,10 +15,10 @@ Route::get('/', function () {
 
 // Menu (CRUD)
 Route::resource('menu', MenuController::class);
-Route::get('/menu', [MenuController::class, 'index'])->name('menu');
-Route::get('/create', [MenuController::class, 'create'])->name('create');
-Route::post('/menu', [MenuController::class, 'store']);
-Route::get('/delete', [MenuController::class, 'deleteView']);
+// Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+// Route::get('/create', [MenuController::class, 'create'])->name('create');
+// Route::post('/menu', [MenuController::class, 'store']);
+// Route::get('/delete', [MenuController::class, 'deleteView']);
 
 // Login & Register
 Route::get('/login', [AuthController::class, 'login'])->name('login');
@@ -40,6 +40,25 @@ Route::middleware(['admin'])->group(function () {
 });
 
 // Dashboard untuk user login
+// Authentication Routes
+Route::get('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login');
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'authenticate'])->name('login.post');
+Route::get('/register', [App\Http\Controllers\RegisteredUserController::class, 'create'])->name('register');
+Route::post('/register', [App\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.post');
+
+
+//logout
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');
+
+
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
