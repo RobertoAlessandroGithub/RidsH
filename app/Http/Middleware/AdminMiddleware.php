@@ -12,6 +12,6 @@ class AdminMiddleware
         if (Auth::check() && Auth::user()->role === 'admin') {
             return $next($request);
         }
-        return redirect('/'); // Redirect ke home kalau bukan admin
+        return redirect('/login'); // Redirect ke home kalau bukan admin
     }
 }

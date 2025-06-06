@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 
@@ -30,7 +31,8 @@ class AuthController extends Controller
 
     public function register()
 {
-    return view('auth.register');
+    // return view('auth.register');
+    return view('register');
 }
 
 public function registerPost(Request $request)
@@ -38,7 +40,7 @@ public function registerPost(Request $request)
      $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users',
-        'password' => 'required|confirmed'
+        'password' => 'required|min:8|confirmed'
     ]);
 
     $user = new User();
