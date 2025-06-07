@@ -1,6 +1,4 @@
 <?php
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -10,75 +8,56 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 
-// Halaman utama
-=======
-=======
->>>>>>> Stashed changes
-
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-
-// Route untuk resource menu (CRUD)
-Route::resource('menu', MenuController::class);
-
-// Route utama (home)
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+// ==========================
+// Halaman Utama
+// ==========================
 Route::get('/', function () {
     return view('Main');
-});
+})->name('home');
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+// ==========================
 // Menu (CRUD)
+// ==========================
 Route::resource('menu', MenuController::class);
-// Route::get('/menu', [MenuController::class, 'index'])->name('menu');
-// Route::get('/create', [MenuController::class, 'create'])->name('create');
-// Route::post('/menu', [MenuController::class, 'store']);
-// Route::get('/delete', [MenuController::class, 'deleteView']);
 
+// ==========================
 // Login & Register
+// ==========================
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
+
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'registerPost'])->name('register.post');
 
+// ==========================
 // Logout
+// ==========================
 Route::post('/logout', function () {
     Auth::logout();
     return redirect('/login');
 })->name('logout');
 
-// Admin Dashboard
+// ==========================
+// Admin Dashboard (hanya untuk admin)
+// ==========================
 Route::middleware(['admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
-    });
+    })->name('admin.dashboard');
 });
 
+// ==========================
 // Dashboard untuk user login
-// Authentication Routes
-Route::get('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login');
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'authenticate'])->name('login.post');
-// Route::get('/register', [App\Http\Controllers\RegisteredUserController::class, 'create'])->name('register');
-// Route::post('/register', [App\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.post');
+// ==========================
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
 
-=======
-// Route untuk dashboard, hanya bisa diakses oleh user yang sudah login dan terverifikasi
->>>>>>> Stashed changes
-=======
-// Route untuk dashboard, hanya bisa diakses oleh user yang sudah login dan terverifikasi
->>>>>>> Stashed changes
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-// Order dan Cart
+// ==========================
+// Order & Cart
+// ==========================
 Route::get('/order', [OrderController::class, 'order']);
 Route::post('/add-to-cart', [CartController::class, 'addToCart']);
 Route::get('/cart', [CartController::class, 'showCart']);
@@ -88,21 +67,16 @@ Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout');
 Route::post('/process-checkout', [CartController::class, 'processCheckout']);
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
-// Profile (hanya bisa diakses jika login)
-=======
-// Route untuk profil, hanya bisa diakses oleh user yang sudah login
->>>>>>> Stashed changes
-=======
-// Route untuk profil, hanya bisa diakses oleh user yang sudah login
->>>>>>> Stashed changes
+// ==========================
+// Profil (hanya untuk user yang login)
+// ==========================
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-<<<<<<< Updated upstream
-=======
 
-// Memuat route untuk autentikasi (login, register, dsb.)
-require __DIR__.'/auth.php';
->>>>>>> Stashed changes
+// ==========================
+// Route Otomatis dari Laravel Breeze / Jetstream (jika digunakan)
+// ==========================
+// require __DIR__.'/auth.php';
