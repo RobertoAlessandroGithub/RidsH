@@ -1,5 +1,6 @@
 <?php
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,8 @@ use App\Http\Controllers\ProfileController;
 
 // Halaman utama
 =======
+=======
+>>>>>>> Stashed changes
 
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProfileController;
@@ -20,11 +23,15 @@ use Illuminate\Support\Facades\Route;
 Route::resource('menu', MenuController::class);
 
 // Route utama (home)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 Route::get('/', function () {
     return view('Main');
 });
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 // Menu (CRUD)
 Route::resource('menu', MenuController::class);
@@ -62,10 +69,14 @@ Route::post('/login', [App\Http\Controllers\AuthController::class, 'authenticate
 =======
 // Route untuk dashboard, hanya bisa diakses oleh user yang sudah login dan terverifikasi
 >>>>>>> Stashed changes
+=======
+// Route untuk dashboard, hanya bisa diakses oleh user yang sudah login dan terverifikasi
+>>>>>>> Stashed changes
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 // Order dan Cart
 Route::get('/order', [OrderController::class, 'order']);
@@ -78,6 +89,9 @@ Route::post('/process-checkout', [CartController::class, 'processCheckout']);
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
 // Profile (hanya bisa diakses jika login)
+=======
+// Route untuk profil, hanya bisa diakses oleh user yang sudah login
+>>>>>>> Stashed changes
 =======
 // Route untuk profil, hanya bisa diakses oleh user yang sudah login
 >>>>>>> Stashed changes
