@@ -1,4 +1,5 @@
 <?php
+<<<<<<< Updated upstream
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -9,10 +10,22 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 
 // Halaman utama
+=======
+
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+// Route untuk resource menu (CRUD)
+Route::resource('menu', MenuController::class);
+
+// Route utama (home)
+>>>>>>> Stashed changes
 Route::get('/', function () {
     return view('Main');
 });
 
+<<<<<<< Updated upstream
 // Menu (CRUD)
 Route::resource('menu', MenuController::class);
 // Route::get('/menu', [MenuController::class, 'index'])->name('menu');
@@ -46,10 +59,14 @@ Route::post('/login', [App\Http\Controllers\AuthController::class, 'authenticate
 // Route::get('/register', [App\Http\Controllers\RegisteredUserController::class, 'create'])->name('register');
 // Route::post('/register', [App\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.post');
 
+=======
+// Route untuk dashboard, hanya bisa diakses oleh user yang sudah login dan terverifikasi
+>>>>>>> Stashed changes
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+<<<<<<< Updated upstream
 // Order dan Cart
 Route::get('/order', [OrderController::class, 'order']);
 Route::post('/add-to-cart', [CartController::class, 'addToCart']);
@@ -61,8 +78,17 @@ Route::post('/process-checkout', [CartController::class, 'processCheckout']);
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
 // Profile (hanya bisa diakses jika login)
+=======
+// Route untuk profil, hanya bisa diakses oleh user yang sudah login
+>>>>>>> Stashed changes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+<<<<<<< Updated upstream
+=======
+
+// Memuat route untuk autentikasi (login, register, dsb.)
+require __DIR__.'/auth.php';
+>>>>>>> Stashed changes
