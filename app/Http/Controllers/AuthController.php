@@ -31,8 +31,7 @@ class AuthController extends Controller
 
     public function register()
 {
-    // return view('auth.register');
-    return view('register');
+    return view('auth.register');
 }
 
 public function registerPost(Request $request)
@@ -46,7 +45,8 @@ public function registerPost(Request $request)
     $user = new User();
     $user->name = $request->name;
     $user->email = $request->email;
-    $user->password = bcrypt($request->password);
+    // $user->password = bcrypt($request->password);
+    $user->password = $request->password; // Laravel akan otomatis hash karena casts
     $user->role = 'user'; // optional kalau pakai role
     $user->save();
 
