@@ -37,14 +37,14 @@ class MenuController extends Controller
                 'price' => 'required|numeric|min:0',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-        
+
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('menu_images', 'public');
                 $validatedData['image'] = $imagePath;
             }
-        
+
             Menu::create($validatedData);
-        
+
             return redirect('/menu')->with('success', 'Menu berhasil ditambahkan!');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Gagal menyimpan menu: '.$e->getMessage());
@@ -79,7 +79,7 @@ class MenuController extends Controller
                 'price' => 'required|numeric|min:0',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-            
+
             if ($request->hasFile('image')) {
                 if ($menu->image) {
                     Storage::delete($menu->image);
@@ -87,9 +87,9 @@ class MenuController extends Controller
                 $imagePath = $request->file('image')->store('menu_images', 'public');
                 $validatedData['image'] = $imagePath;
             }
-            
+
             $menu->update($validatedData);
-            
+
             return redirect('/menu')->with('success', 'Menu berhasil diperbarui!');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Gagal memperbarui menu: '.$e->getMessage());

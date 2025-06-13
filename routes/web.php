@@ -12,9 +12,8 @@ use App\Http\Controllers\ProfileController;
 // Halaman Utama
 // ==========================
 Route::get('/', function () {
-    return view('Main');
+    return view('layouts.main');
 })->name('home');
-
 // ==========================
 // Menu (CRUD)
 // ==========================
@@ -54,6 +53,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 });
+
+// Rooms
+Route::get('/rooms', function () {
+    return view('customer.rooms.kamar');
+});
+
+// Rooms-Deluxe
+Route::get('/kamar-deluxe', function () {
+    return view('customer.rooms.kamar-deluxe');
+});
+//maminko
+Route::get('/maminko', function () {
+    return view('customer.maminko.maminko');
+});
+
+Route::get('/menu-detail', function () {
+    return view('customer.maminko.menu-detail');
+});
+
+Route::get('/menu/{name}', function ($name) {
+    // nanti kamu bisa query database atau array di sini berdasarkan nama
+    $menu = [
+        'name' => $name,
+        'desc' => 'Contoh deskripsi dari makanan.',
+        'price' => '17 GEL',
+        'image' => '/images/makanan.jpg',
+    ];
+    return view('customer.maminko.menu-detail', compact('menu'));
+})->name('menu.detail');
 
 // ==========================
 // Order & Cart
