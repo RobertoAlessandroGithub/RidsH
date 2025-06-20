@@ -74,12 +74,43 @@ Route::get('/menu-detail', function () {
 
 Route::get('/menu/{name}', function ($name) {
     // nanti kamu bisa query database atau array di sini berdasarkan nama
-    $menu = [
-        'name' => $name,
-        'desc' => 'Contoh deskripsi dari makanan.',
-        'price' => '17 GEL',
-        'image' => '/images/makanan.jpg',
+    $decodedName = urldecode($name);
+
+    // Simulasi pencarian data menu (nantinya bisa dari DB)
+    $menus = [
+        'Red Dragon' => [
+            'name' => 'Red Dragon',
+            'desc' => 'Salmon, Philadelphia cheese, cucumber, avocado',
+            'price' => 17000,
+            'image' => '/images/makanan.jpg',
+        ],
+        'Japanese Salad With Shrimps' => [
+            'name' => 'Japanese Salad With Shrimps',
+            'desc' => 'Shrimp, greens, sesame dressing',
+            'price' => 20000,
+            'image' => '/images/makanan.jpg',
+        ],
+        'Maki Tuna' => [
+            'name' => 'Maki Tuna',
+            'desc' => 'Tuna, rice, nori seaweed',
+            'price' => 15000,
+            'image' => '/images/makanan.jpg',
+        ],
+        'Salmon Sashimi' => [
+            'name' => 'Salmon Sashimi',
+            'desc' => 'Fresh salmon slices',
+            'price' => 22000,
+            'image' => '/images/makanan.jpg',
+        ],
     ];
+
+    // Cek apakah menu tersedia
+    if (!isset($menus[$decodedName])) {
+        abort(404, 'Menu tidak ditemukan.');
+    }
+
+    $menu = $menus[$decodedName];
+
     return view('customer.maminko.menu-detail', compact('menu'));
 })->name('menu.detail');
 

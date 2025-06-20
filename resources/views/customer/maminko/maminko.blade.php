@@ -15,6 +15,10 @@
     <style>
         #cartPopup {
             transition: transform 0.3s ease;
+            max-height: 60vh; /* supaya tidak lebih dari 60% tinggi layar */
+            overflow-y: auto;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
         }
         .menu-container {
             display: grid;
@@ -28,6 +32,12 @@
             background: #fff;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
+            height: 100%;
+            min-height: 360px; /* Sesuaikan dengan kebutuhan desain */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 15px; /* atau 15px */
         }
         .menu-card:hover {
             transform: scale(1.03);
@@ -106,35 +116,42 @@
     <div class="menu-container px-6 max-w-7xl mx-auto" id="menuList">
         @php
             $menus = [
-                ['name' => 'Red Dragon', 'desc' => 'Salmon, Philadelphia cheese, cucumber, avocado', 'price' => '17 GEL', 'category' => 'sushi'],
-                ['name' => 'Japanese Salad With Shrimps', 'desc' => 'Shrimp, greens, sesame dressing', 'price' => '20 GEL', 'category' => 'sashimi'],
-                ['name' => 'Maki Tuna', 'desc' => 'Tuna, rice, nori seaweed', 'price' => '15 GEL', 'category' => 'maki'],
-                ['name' => 'Salmon Sashimi', 'desc' => 'Fresh salmon slices', 'price' => '22 GEL', 'category' => 'sashimi'],
+                ['name' => 'Red Dragon', 'desc' => 'Salmon, Philadelphia cheese, cucumber, avocado', 'price' => 17000, 'category' => 'sushi'],
+                ['name' => 'Japanese Salad With Shrimps', 'desc' => 'Shrimp, greens, sesame dressing', 'price' => 20000, 'category' => 'sashimi'],
+                ['name' => 'Maki Tuna', 'desc' => 'Tuna, rice, nori seaweed', 'price' => 15000, 'category' => 'maki'],
+                ['name' => 'Salmon Sashimi', 'desc' => 'Fresh salmon slices', 'price' => 22000, 'category' => 'sashimi'],
             ];
         @endphp
 
         @foreach($menus as $menu)
-            <a href="{{ route('menu.detail', ['name' => urlencode($menu['name'])]) }}" style="text-decoration: none; color: inherit;">
-                <div class="menu-card" data-category="{{ $menu['category'] }}">
-                    <img src="/images/makanan.jpg" alt="{{ $menu['name'] }}">
-                    <div class="menu-info">
-                        <h3 class="text-lg font-semibold">{{ $menu['name'] }}</h3>
-                        <p class="text-sm text-gray-500">{{ $menu['desc'] }}</p>
-                        <p class="text-orange-500 font-bold mt-2">{{ $menu['price'] }}</p>
-                        <button onclick="addToCart('{{ $menu['name'] }}', '{{ $menu['price'] }}')" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">
+            <div
+                class="menu-card flex flex-col justify-between min-h-[360px] rounded-2xl cursor-pointer"
+                style="height: 100%;"
+                data-category="{{ $menu['category'] }}"
+                onclick="window.location.href='{{ route('menu.detail', ['name' => urlencode($menu['name'])]) }}'"
+            >
+                <img src="/images/makanan.jpg" alt="{{ $menu['name'] }}">
+                <div class="menu-info">
+                    <h3 class="text-lg font-semibold">{{ $menu['name'] }}</h3>
+                    <p class="text-sm text-gray-500">{{ $menu['desc'] }}</p>
+                    <p class="text-orange-500 font-bold mt-2">Rp {{ number_format($menu['price'], 0, ',', '.') }}</p>
+                </div>
+                <div class="px-4 pb-4">
+                    <button
+                        onclick="event.stopPropagation(); addToCart('{{ $menu['name'] }}', {{ $menu['price'] }})"
+                        class="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">
                         Pesan
                     </button>
-                    </div>
                 </div>
-            </a>
+            </div>
         @endforeach
-    </div>
 
-    <div id="cartPopup" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 border-t border-gray-200 hidden z-50">
-        <h3 class="text-lg font-bold mb-2">Keranjang</h3>
-        <div id="cartItems" class="max-h-60 overflow-y-auto mb-2"></div>
+
+    <div id="cartPopup" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 border-t border-gray-200 hidden z-50 max-h-[60vh] overflow-y-auto rounded-t-2xl">
+        <h3 class="text-lg font-bold">Keranjang</h3>
+        <div id="cartItems" class="max-h-60 overflow-y-auto mb-6"></div>
         <div class="flex justify-between items-center">
-            <p class="font-semibold">Total: <span id="cartTotal">0 GEL</span></p>
+            <p class="font-semibold">Total: <span id="cartTotal">Rp .0</span></p>
             <button onclick="checkout()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded">Checkout</button>
         </div>
     </div>
@@ -178,59 +195,99 @@
 
         function addToCart(name, price) {
             if (!cart[name]) {
-                cart[name] = { qty: 1, price: parseFloat(price) };
+                cart[name] = { qty: 1, price: parseInt(price) };
             } else {
                 cart[name].qty += 1;
             }
             renderCart();
         }
 
-        function renderCart() {
-            const cartItems = document.getElementById('cartItems');
-            const cartTotal = document.getElementById('cartTotal');
-            const cartPopup = document.getElementById('cartPopup');
+    function renderCart() {
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        const cartPopup = document.getElementById('cartPopup');
 
-            cartItems.innerHTML = '';
-            let total = 0;
+        cartItems.innerHTML = '';
+        let total = 0;
 
-            Object.entries(cart).forEach(([name, item]) => {
-                const itemTotal = item.qty * item.price;
-                total += itemTotal;
+        Object.entries(cart).forEach(([name, item]) => {
+            const itemTotal = item.qty * item.price;
+            total += itemTotal;
 
-                cartItems.innerHTML += `
-                    <div class="flex justify-between items-center mb-1">
-                        <div>
-                            <p class="font-medium">${name}</p>
-                            <p class="text-sm text-gray-500">${item.qty} x ${item.price} GEL</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="updateQty('${name}', -1)" class="px-2 bg-gray-200 rounded">-</button>
-                            <button onclick="updateQty('${name}', 1)" class="px-2 bg-gray-200 rounded">+</button>
-                        </div>
+            cartItems.innerHTML += `
+                <div class="flex justify-between items-center mb-1">
+                    <div>
+                        <p class="font-medium">${name}</p>
+                        <p class="text-sm text-gray-500">${item.qty} x Rp ${formatRupiah(item.price)}</p>
                     </div>
-                `;
-            });
+                    <div class="flex items-center space-x-1">
+                        <button onclick="updateQty('${name}', -1)" class="px-2 bg-gray-200 rounded">-</button>
+                        <button onclick="updateQty('${name}', 1)" class="px-2 bg-gray-200 rounded">+</button>
+                    </div>
+                </div>
+            `;
+        });
 
-            cartTotal.innerText = `${total.toFixed(2)} GEL`;
-            cartPopup.classList.remove('hidden');
-        }
+        cartTotal.innerText = `Rp ${formatRupiah(total)}`;
+        cartPopup.classList.remove('hidden');
+    }
 
-        function updateQty(name, change) {
-            if (cart[name]) {
-                cart[name].qty += change;
-                if (cart[name].qty <= 0) {
-                    delete cart[name];
+    function formatRupiah(angka) {
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+
+            function updateQty(name, change) {
+                if (cart[name]) {
+                    cart[name].qty += change;
+                    if (cart[name].qty <= 0) {
+                        delete cart[name];
+                    }
+                    renderCart();
                 }
-                renderCart();
             }
-        }
 
-        function checkout() {
-            alert('Fitur checkout belum dibuat!');
-        }
+            function checkout() {
+                alert('Fitur checkout belum dibuat!');
+            }
 
         // Search dan Filter tetap sama
     </script>
+
+        <!-- Footer -->
+    <footer class="bg-gray-900 text-white text-sm mt-10">
+        <div class="max-w-6xl mx-auto py-10 px-4 grid md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="text-lg font-bold mb-4">Rid's Hotel</h4>
+                <p>Jalan Bahagia No. 123<br>Palembang, Indonesia</p>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold mb-4">About</h4>
+                <ul>
+                    <li><a href="/" class="hover:underline">Home</a></li>
+                    <li><a href="/rooms" class="hover:underline">Rooms</a></li>
+                    <li><a href="/facilities" class="hover:underline">Facilities</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold mb-4">Help</h4>
+                <ul>
+                    <li><a href="/contact" class="hover:underline">Contact Us</a></li>
+                    <li><a href="#" class="hover:underline">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:underline">Terms</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold mb-4">Follow Us</h4>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-purple-400">Facebook</a>
+                    <a href="#" class="hover:text-purple-400">Instagram</a>
+                    <a href="#" class="hover:text-purple-400">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center py-4 border-t border-gray-700">© 2025 Rid's Hotel. All rights reserved.</div>
+    </footer>
 
 </body>
 </html>
