@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +16,7 @@
     <style>
         #cartPopup {
             transition: transform 0.3s ease;
-            max-height: 60vh; /* supaya tidak lebih dari 60% tinggi layar */
+            max-height: 60vh;
             overflow-y: auto;
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
@@ -33,11 +34,11 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
             height: 100%;
-            min-height: 360px; /* Sesuaikan dengan kebutuhan desain */
+            min-height: 360px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-radius: 15px; /* atau 15px */
+            border-radius: 15px;
         }
         .menu-card:hover {
             transform: scale(1.03);
@@ -147,7 +148,7 @@
                 </div>
             </div>
         @endforeach
-
+    </div>
 
     <div id="cartPopup" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 border-t border-gray-200 hidden z-50 max-h-[60vh] overflow-y-auto rounded-t-2xl">
         <h3 class="text-lg font-bold">Keranjang</h3>
@@ -158,8 +159,76 @@
         </div>
     </div>
 
+    <form id="cartForm" action="{{ route('checkout.store') }}" method="POST" style="display: none;">
+        @csrf
+        <input type="hidden" name="cart_data" id="cartDataInput">
+    </form>
+
     <script>
         AOS.init();
+
+        let cart = {};
+
+        function addToCart(name, price) {
+            if (!cart[name]) {
+                cart[name] = { qty: 1, price: parseInt(price) };
+            } else {
+                cart[name].qty += 1;
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const cartPopup = document.getElementById('cartPopup');
+
+            cartItems.innerHTML = '';
+            let total = 0;
+
+            Object.entries(cart).forEach(([name, item]) => {
+                const itemTotal = item.qty * item.price;
+                total += itemTotal;
+
+                cartItems.innerHTML += `
+                    <div class="flex justify-between items-center mb-1">
+                        <div>
+                            <p class="font-medium">${name}</p>
+                            <p class="text-sm text-gray-500">${item.qty} x Rp ${formatRupiah(item.price)}</p>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="updateQty('${name}', -1)" class="px-2 bg-gray-200 rounded">-</button>
+                            <button onclick="updateQty('${name}', 1)" class="px-2 bg-gray-200 rounded">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cartTotal.innerText = `Rp ${formatRupiah(total)}`;
+            cartPopup.classList.remove('hidden');
+        }
+
+        function updateQty(name, change) {
+            if (cart[name]) {
+                cart[name].qty += change;
+                if (cart[name].qty <= 0) {
+                    delete cart[name];
+                }
+                renderCart();
+            }
+        }
+
+        function checkout() {
+            const form = document.getElementById('cartForm');
+            const cartDataInput = document.getElementById('cartDataInput');
+            cartDataInput.value = JSON.stringify(cart);
+            form.submit();
+        }
+
+        function formatRupiah(angka) {
+            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
         function filterCategory(category) {
             const cards = document.querySelectorAll('.menu-card');
             document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('active'));
@@ -190,73 +259,6 @@
         });
     </script>
 
-    <script>
-        AOS.init();
-
-        let cart = {};
-
-        function addToCart(name, price) {
-            if (!cart[name]) {
-                cart[name] = { qty: 1, price: parseInt(price) };
-            } else {
-                cart[name].qty += 1;
-            }
-            renderCart();
-        }
-
-    function renderCart() {
-        const cartItems = document.getElementById('cartItems');
-        const cartTotal = document.getElementById('cartTotal');
-        const cartPopup = document.getElementById('cartPopup');
-
-        cartItems.innerHTML = '';
-        let total = 0;
-
-        Object.entries(cart).forEach(([name, item]) => {
-            const itemTotal = item.qty * item.price;
-            total += itemTotal;
-
-            cartItems.innerHTML += `
-                <div class="flex justify-between items-center mb-1">
-                    <div>
-                        <p class="font-medium">${name}</p>
-                        <p class="text-sm text-gray-500">${item.qty} x Rp ${formatRupiah(item.price)}</p>
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="updateQty('${name}', -1)" class="px-2 bg-gray-200 rounded">-</button>
-                        <button onclick="updateQty('${name}', 1)" class="px-2 bg-gray-200 rounded">+</button>
-                    </div>
-                </div>
-            `;
-        });
-
-        cartTotal.innerText = `Rp ${formatRupiah(total)}`;
-        cartPopup.classList.remove('hidden');
-    }
-
-    function formatRupiah(angka) {
-        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
-
-
-            function updateQty(name, change) {
-                if (cart[name]) {
-                    cart[name].qty += change;
-                    if (cart[name].qty <= 0) {
-                        delete cart[name];
-                    }
-                    renderCart();
-                }
-            }
-
-            function checkout() {
-                window.location.href = '/checkout';
-            }
-
-        // Search dan Filter tetap sama
-    </script>
-
-        <!-- Footer -->
     <footer class="bg-gray-900 text-white text-sm mt-10">
         <div class="max-w-6xl mx-auto py-10 px-4 grid md:grid-cols-4 gap-8">
             <div>
