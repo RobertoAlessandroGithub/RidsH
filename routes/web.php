@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CheckoutController;
 
 // ==========================
 // Halaman Utama
@@ -24,6 +25,7 @@ Route::resource('menu', MenuController::class);
 // ==========================
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
+
 
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'registerPost'])->name('register.post');
@@ -53,6 +55,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 });
+
+
+//Checkout 
+Route::post('/store-cart', [App\Http\Controllers\CheckoutController::class, 'storeCart'])->name('checkout.store');
+Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'show'])->name('checkout');
+Route::post('/process-checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
+Route::post('/process-checkout', [App\Http\Controllers\CheckoutController::class, 'processCheckout']);
+
 
 // Rooms
 Route::get('/rooms', function () {
