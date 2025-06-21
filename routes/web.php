@@ -72,6 +72,11 @@ Route::get('/menu-detail', function () {
     return view('customer.maminko.menu-detail');
 });
 
+Route::get('/checkout', function () {
+    return view('customer.maminko.checkout');
+});
+
+
 Route::get('/menu/{name}', function ($name) {
     // nanti kamu bisa query database atau array di sini berdasarkan nama
     $decodedName = urldecode($name);
@@ -122,8 +127,8 @@ Route::post('/add-to-cart', [CartController::class, 'addToCart']);
 Route::get('/cart', [CartController::class, 'showCart']);
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart']);
 
-Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout');
-Route::post('/process-checkout', [CartController::class, 'processCheckout']);
+// Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout');
+// Route::post('/process-checkout', [CartController::class, 'processCheckout']);
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
 // ==========================

@@ -130,16 +130,18 @@
                 data-category="{{ $menu['category'] }}"
                 onclick="window.location.href='{{ route('menu.detail', ['name' => urlencode($menu['name'])]) }}'"
             >
-                <img src="/images/makanan.jpg" alt="{{ $menu['name'] }}">
-                <div class="menu-info">
+                <img src="/images/makanan.jpg" alt="{{ $menu['name'] }}" class="rounded-t-2xl">
+
+                <div class="menu-info p-4 flex-1">
                     <h3 class="text-lg font-semibold">{{ $menu['name'] }}</h3>
                     <p class="text-sm text-gray-500">{{ $menu['desc'] }}</p>
                     <p class="text-orange-500 font-bold mt-2">Rp {{ number_format($menu['price'], 0, ',', '.') }}</p>
                 </div>
+
                 <div class="px-4 pb-4">
                     <button
                         onclick="event.stopPropagation(); addToCart('{{ $menu['name'] }}', {{ $menu['price'] }})"
-                        class="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">
+                        class="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm w-full">
                         Pesan
                     </button>
                 </div>
@@ -152,7 +154,7 @@
         <div id="cartItems" class="max-h-60 overflow-y-auto mb-6"></div>
         <div class="flex justify-between items-center">
             <p class="font-semibold">Total: <span id="cartTotal">Rp .0</span></p>
-            <button onclick="checkout()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded">Checkout</button>
+            <a href="/checkout" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded">Checkout</a>
         </div>
     </div>
 
@@ -248,7 +250,7 @@
             }
 
             function checkout() {
-                alert('Fitur checkout belum dibuat!');
+                window.location.href = '/checkout';
             }
 
         // Search dan Filter tetap sama
