@@ -4,21 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Menu;
-use Illuminate\Http\Request;
 
 class Menu extends Model
 {
     use HasFactory;
 
-    // Menentukan atribut yang dapat diisi (mass assignable)
     protected $fillable = [
         'name',
         'description',
         'price',
-        'image',
+        'image', // Jika hanya menyimpan satu gambar sebagai string path
+        // 'images', // Jika Anda punya kolom 'images' untuk menyimpan array JSON dari path gambar
+        // 'category_id', // Jika Anda punya kolom untuk kategori
+        'detailed_description', // Tambahkan jika ada kolom ini di DB
+        // 'average_rating',
+        // 'total_ratings',
+        // 'reviews',
+        // 'nutritional_info',
     ];
 
-    // Jika Anda memiliki relasi, Anda bisa mendefinisikannya di sini
-    // Contoh: public function orders() { return $this->hasMany(Order::class); }
+    // PENTING: Jika Anda menyimpan array gambar, reviews, dll. sebagai JSON di database,
+    // Anda perlu menambahkan casting ini.
+    protected $casts = [
+        'images' => 'array', // Jika kolom 'images' menyimpan JSON array of image paths
+        'reviews' => 'array', // Jika kolom 'reviews' menyimpan JSON array of review objects
+        // 'nutritional_info' => 'array', // Jika ini juga JSON
+    ];
 }

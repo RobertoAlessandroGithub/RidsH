@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,10 +5,7 @@
     <title>Maminko - Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {{-- Tambahkan ini jika pakai Tailwind --}}
     <script src="https://cdn.tailwindcss.com"></script>
-
-    {{-- Tambahkan ini jika pakai AOS --}}
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
@@ -108,6 +104,7 @@
 
     <div class="text-center mb-6">
         <button class="category-button active" onclick="filterCategory('all')">All Products</button>
+        {{-- Anda bisa menambahkan tombol kategori dinamis dari database jika Anda punya model Category --}}
         <button class="category-button" onclick="filterCategory('sushi')">Sushi</button>
         <button class="category-button" onclick="filterCategory('maki')">Maki</button>
         <button class="category-button" onclick="filterCategory('sashimi')">Sashimi</button>
@@ -115,63 +112,124 @@
     </div>
 
     <div class="menu-container px-6 max-w-7xl mx-auto" id="menuList">
-        @php
-            $menus = [
-                ['name' => 'Red Dragon', 'desc' => 'Salmon, Philadelphia cheese, cucumber, avocado', 'price' => 17000, 'category' => 'sushi'],
-                ['name' => 'Japanese Salad With Shrimps', 'desc' => 'Shrimp, greens, sesame dressing', 'price' => 20000, 'category' => 'sashimi'],
-                ['name' => 'Maki Tuna', 'desc' => 'Tuna, rice, nori seaweed', 'price' => 15000, 'category' => 'maki'],
-                ['name' => 'Salmon Sashimi', 'desc' => 'Fresh salmon slices', 'price' => 22000, 'category' => 'sashimi'],
-            ];
-        @endphp
-
-        @foreach($menus as $menu)
+        {{-- LOOPING DATA MENU DARI DATABASE --}}
+        {{-- Variabel $menus ini datang dari MenuController@maminkoIndex --}}
+        @forelse($menus as $menu)
             <div
                 class="menu-card flex flex-col justify-between min-h-[360px] rounded-2xl cursor-pointer"
                 style="height: 100%;"
-                data-category="{{ $menu['category'] }}"
-                onclick="window.location.href='{{ route('menu.detail', ['name' => urlencode($menu['name'])]) }}'"
+                data-category="{{ $menu->category ?? 'uncategorized' }}" {{-- Asumsi ada kolom category --}}
+                {{-- PENTING: Ini adalah link yang benar ke halaman detail menu --}}
+                onclick="window.location.href='{{ route('menu.detail', ['name' => urlencode($menu->name)]) }}'"
             >
-                <img src="/images/makanan.jpg" alt="{{ $menu['name'] }}" class="rounded-t-2xl">
+                {{-- Gunakan $menu->image jika disimpan sebagai string path di DB --}}
+                {{-- Jika Anda menyimpan array of images, gunakan $menu->images[0] atau iterasi --}}
+                <img src="{{ asset('storage/' . ($menu->image ?? 'images/makanan.jpg')) }}" alt="{{ $menu->name }}" class="rounded-t-2xl">
 
                 <div class="menu-info p-4 flex-1">
-                    <h3 class="text-lg font-semibold">{{ $menu['name'] }}</h3>
-                    <p class="text-sm text-gray-500">{{ $menu['desc'] }}</p>
-                    <p class="text-orange-500 font-bold mt-2">Rp {{ number_format($menu['price'], 0, ',', '.') }}</p>
+                    <h3 class="text-lg font-semibold">{{ $menu->name }}</h3>
+                    <p class="text-sm text-gray-500">{{ $menu->description }}</p> {{-- Pastikan nama kolom 'description' --}}
+                    <p class="text-orange-500 font-bold mt-2">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
                 </div>
 
                 <div class="px-4 pb-4">
                     <button
-                        onclick="event.stopPropagation(); addToCart('{{ $menu['name'] }}', {{ $menu['price'] }})"
+                        onclick="event.stopPropagation(); addToCart('{{ $menu->name }}', {{ $menu->price }}, '{{ asset('storage/' . ($menu->image ?? 'images/makanan.jpg')) }}')"
                         class="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm w-full">
                         Pesan
                     </button>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <p class="text-gray-600 text-center col-span-full">Belum ada menu yang tersedia.</p>
+        @endforelse
     </div>
+
+    <!-- Tambah tombol toggle cart -->
+    <button onclick="toggleCart()"
+        class="fixed bottom-24 right-4 z-50 bg-orange-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-1">
+        🛒
+        <span id="cartCount" class="bg-red-600 text-white px-2 py-0.5 rounded-full text-xs ml-1">0</span>
+    </button>
+
 
     <div id="cartPopup" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 border-t border-gray-200 hidden z-50 max-h-[60vh] overflow-y-auto rounded-t-2xl">
-        <h3 class="text-lg font-bold">Keranjang</h3>
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-lg font-bold">Keranjang</h3>
+            <button onclick="toggleCart()" class="text-gray-500 hover:text-red-500 text-xl leading-none font-bold">&times;</button>
+        </div>
         <div id="cartItems" class="max-h-60 overflow-y-auto mb-6"></div>
         <div class="flex justify-between items-center">
-            <p class="font-semibold">Total: <span id="cartTotal">Rp .0</span></p>
-            <a href="/checkout" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded">Checkout</a>
+            <p class="font-semibold">Total: <span id="cartTotal">Rp 0</span></p>
+            <a href="{{ route('checkout.index') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded">Checkout</a>
         </div>
     </div>
-
-    <form id="cartForm" action="{{ route('checkout.store') }}" method="POST" style="display: none;">
-        @csrf
-        <input type="hidden" name="cart_data" id="cartDataInput">
-    </form>
 
     <script>
         AOS.init();
 
         let cart = {};
 
-        function addToCart(name, price) {
+        function formatRupiah(angka) {
+            if (typeof angka !== 'number') {
+                angka = parseFloat(angka);
+            }
+            if (isNaN(angka)) {
+                return '0';
+            }
+            const formatted = Math.round(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return `${formatted}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                try {
+                    cart = JSON.parse(savedCart);
+                } catch (e) {
+                    console.error("Error parsing cart from localStorage:", e);
+                    cart = {};
+                }
+            }
+            renderCart();
+        });
+
+        function addToCart(name, price, image) {
+            const flyImg = document.createElement('img'); // Ubah dari div ke img
+            flyImg.src = image; // Set source gambar
+            flyImg.className = 'fixed z-50 bg-orange-400 text-white text-xs px-2 py-1 rounded-full shadow-lg w-16 h-16 object-cover'; // Tambah ukuran dan object-cover
+            flyImg.innerText = `+1 ${name}`; // Ini tidak akan muncul di img, hanya untuk visualisasi debugging
+            document.body.appendChild(flyImg);
+
+            flyImg.style.top = event.clientY + 'px';
+            flyImg.style.left = event.clientX + 'px';
+            flyImg.style.transition = 'all 0.7s ease-in-out';
+
+            // Hitung posisi target tombol cart (disesuaikan agar lebih tepat ke tombol)
+            const targetButton = document.querySelector('.fixed.bottom-24.right-4');
+            let targetX = window.innerWidth - 70; // Default
+            let targetY = window.innerHeight - 100; // Default
+
+            if (targetButton) {
+                const rect = targetButton.getBoundingClientRect();
+                targetX = rect.left + rect.width / 2;
+                targetY = rect.top + rect.height / 2;
+            }
+
+            // Set CSS variables for animation
+            flyImg.style.setProperty('--start-x', event.clientX + 'px');
+            flyImg.style.setProperty('--start-y', event.clientY + 'px');
+            flyImg.style.setProperty('--target-x', targetX + 'px');
+            flyImg.style.setProperty('--target-y', targetY + 'px');
+            flyImg.classList.add('fly-animation'); // Tambahkan kelas animasi
+
+            setTimeout(() => {
+                flyImg.remove();
+                // Opsional: tampilkan alert atau notifikasi lain
+            }, 800);
+
             if (!cart[name]) {
-                cart[name] = { qty: 1, price: parseInt(price) };
+                cart[name] = { qty: 1, price: parseInt(price), image: image };
             } else {
                 cart[name].qty += 1;
             }
@@ -181,34 +239,51 @@
         function renderCart() {
             const cartItems = document.getElementById('cartItems');
             const cartTotal = document.getElementById('cartTotal');
-            const cartPopup = document.getElementById('cartPopup');
+            const cartCount = document.getElementById('cartCount');
 
             cartItems.innerHTML = '';
             let total = 0;
+            let totalQty = 0;
 
-            Object.entries(cart).forEach(([name, item]) => {
-                const itemTotal = item.qty * item.price;
-                total += itemTotal;
+            if (Object.keys(cart).length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-500 text-center">Keranjang Anda kosong.</p>';
+            } else {
+                Object.entries(cart).forEach(([name, item]) => {
+                    const itemTotal = item.qty * item.price;
+                    total += itemTotal;
+                    totalQty += item.qty;
 
-                cartItems.innerHTML += `
-                    <div class="flex justify-between items-center mb-1">
-                        <div>
-                            <p class="font-medium">${name}</p>
-                            <p class="text-sm text-gray-500">${item.qty} x Rp ${formatRupiah(item.price)}</p>
+                    cartItems.innerHTML += `
+                        <div class="flex items-center justify-between py-2 border-b last:border-b-0 border-gray-100">
+                            <div class="flex items-center">
+                                <img src="${item.image || '/images/makanan.jpg'}" alt="${name}" class="w-12 h-12 rounded-md object-cover mr-3">
+                                <div>
+                                    <p class="font-medium text-gray-800">${name}</p>
+                                    <p class="text-sm text-gray-500">Rp ${formatRupiah(item.price)}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateQty('${name}', -1)" class="p-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                </button>
+                                <span class="font-medium text-gray-800">${item.qty}</span>
+                                <button onclick="updateQty('${name}', 1)" class="p-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </button>
+                                <p class="font-semibold ml-2 text-gray-800">Rp ${formatRupiah(itemTotal)}</p>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="updateQty('${name}', -1)" class="px-2 bg-gray-200 rounded">-</button>
-                            <button onclick="updateQty('${name}', 1)" class="px-2 bg-gray-200 rounded">+</button>
-                        </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
 
             cartTotal.innerText = `Rp ${formatRupiah(total)}`;
-            cartPopup.classList.remove('hidden');
+            cartCount.innerText = totalQty;
+
+            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
-        function updateQty(name, change) {
+        window.updateQty = function(name, change) {
             if (cart[name]) {
                 cart[name].qty += change;
                 if (cart[name].qty <= 0) {
@@ -218,15 +293,8 @@
             }
         }
 
-        function checkout() {
-            const form = document.getElementById('cartForm');
-            const cartDataInput = document.getElementById('cartDataInput');
-            cartDataInput.value = JSON.stringify(cart);
-            form.submit();
-        }
-
-        function formatRupiah(angka) {
-            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        function toggleCart() {
+            document.getElementById('cartPopup').classList.toggle('hidden');
         }
 
         function filterCategory(category) {
@@ -236,7 +304,7 @@
 
             cards.forEach(card => {
                 if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = 'block';
+                    card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
                 }
@@ -251,7 +319,7 @@
                 const name = card.querySelector('h3').innerText.toLowerCase();
                 const desc = card.querySelector('p').innerText.toLowerCase();
                 if (name.includes(keyword) || desc.includes(keyword)) {
-                    card.style.display = 'block';
+                    card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
                 }

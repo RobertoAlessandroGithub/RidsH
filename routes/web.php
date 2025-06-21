@@ -8,6 +8,18 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\AdminController; // Pastikan ini diimpor jika Anda menggunakan AdminController@dashboard
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| provides the "web" middleware group. Now create something great!
+|
+*/
 
 // ==========================
 // Halaman Utama
@@ -15,17 +27,12 @@ use App\Http\Controllers\CheckoutController;
 Route::get('/', function () {
     return view('layouts.main');
 })->name('home');
-// ==========================
-// Menu (CRUD)
-// ==========================
-Route::resource('menu', MenuController::class);
 
 // ==========================
 // Login & Register
 // ==========================
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
-
 
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'registerPost'])->name('register.post');
@@ -38,117 +45,97 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
-// ==========================
-// Admin Dashboard (hanya untuk admin)
-// ==========================
-Route::middleware(['admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-});
+// ======================================================================
+// ROUTE ADMIN (SEMENTARA PUBLIK UNTUK DEBUGGING - HARAP KEMBALIKAN KE MIDDLEWARE 'admin' NANTI)
+// ======================================================================
+
+// Admin Dashboard
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+// Menu CRUD (Resourceful routes untuk Admin)
+// Ini akan menangani:
+// GET /menu          -> MenuController@index   (Daftar semua menu)
+// GET /menu/create   -> MenuController@create  (Form tambah menu baru)
+// POST /menu         -> MenuController@store   (Simpan menu baru)
+// GET /menu/{menu}   -> MenuController@show    (Detail menu admin)
+// GET /menu/{menu}/edit -> MenuController@edit (Form edit menu)
+// PUT/PATCH /menu/{menu} -> MenuController@update (Update menu)
+// DELETE /menu/{menu} -> MenuController@destroy (Hapus menu)
+Route::resource('menu', MenuController::class);
+
+// Route khusus untuk tampilan delete menu (jika ada tampilan terpisah, biasanya dihandle oleh resource index)
+Route::get('/admin/menu/delete-view', [MenuController::class, 'deleteView'])->name('admin.menu.delete-view');
+
+// Manajemen Pesanan (Resourceful routes untuk Admin)
+// Ini akan membuat orders.index, orders.show, dll.
+Route::resource('orders', OrderController::class);
+
+
+// ======================================================================
+// AKHIR DARI ROUTE ADMIN SEMENTARA PUBLIK
+// ======================================================================
+
 
 // ==========================
-// Dashboard untuk user login
+// Dashboard untuk user login biasa (dilindungi middleware 'auth' dan 'verified')
 // ==========================
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard standar untuk user biasa (jika ada)
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('dashboard'); // View 'dashboard.blade.php' (bukan admin.dashboard)
     })->name('dashboard');
+
+    // Profil User Biasa
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Jika ada route Order History khusus user biasa yang berbeda dengan admin.orders.index
+    // Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('my-orders.index');
 });
 
 
-//Checkout 
-Route::post('/store-cart', [App\Http\Controllers\CheckoutController::class, 'storeCart'])->name('checkout.store');
-Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'show'])->name('checkout');
-Route::post('/process-checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
-Route::post('/process-checkout', [App\Http\Controllers\CheckoutController::class, 'processCheckout']);
-
+// ==========================
+// General Public Routes (bisa diakses tanpa login)
+// ==========================
 
 // Rooms
 Route::get('/rooms', function () {
     return view('customer.rooms.kamar');
-});
+})->name('rooms.index');
 
 // Rooms-Deluxe
 Route::get('/kamar-deluxe', function () {
     return view('customer.rooms.kamar-deluxe');
-});
-//maminko
-Route::get('/maminko', function () {
-    return view('customer.maminko.maminko');
-});
-
-Route::get('/menu-detail', function () {
-    return view('customer.maminko.menu-detail');
-});
-
-Route::get('/checkout', function () {
-    return view('customer.maminko.checkout');
-});
-
-
-Route::get('/menu/{name}', function ($name) {
-    // nanti kamu bisa query database atau array di sini berdasarkan nama
-    $decodedName = urldecode($name);
-
-    // Simulasi pencarian data menu (nantinya bisa dari DB)
-    $menus = [
-        'Red Dragon' => [
-            'name' => 'Red Dragon',
-            'desc' => 'Salmon, Philadelphia cheese, cucumber, avocado',
-            'price' => 17000,
-            'image' => '/images/makanan.jpg',
-        ],
-        'Japanese Salad With Shrimps' => [
-            'name' => 'Japanese Salad With Shrimps',
-            'desc' => 'Shrimp, greens, sesame dressing',
-            'price' => 20000,
-            'image' => '/images/makanan.jpg',
-        ],
-        'Maki Tuna' => [
-            'name' => 'Maki Tuna',
-            'desc' => 'Tuna, rice, nori seaweed',
-            'price' => 15000,
-            'image' => '/images/makanan.jpg',
-        ],
-        'Salmon Sashimi' => [
-            'name' => 'Salmon Sashimi',
-            'desc' => 'Fresh salmon slices',
-            'price' => 22000,
-            'image' => '/images/makanan.jpg',
-        ],
-    ];
-
-    // Cek apakah menu tersedia
-    if (!isset($menus[$decodedName])) {
-        abort(404, 'Menu tidak ditemukan.');
-    }
-
-    $menu = $menus[$decodedName];
-
-    return view('customer.maminko.menu-detail', compact('menu'));
-})->name('menu.detail');
+})->name('rooms.deluxe');
 
 // ==========================
-// Order & Cart
+// Maminko Menu & Checkout (Customer-facing)
 // ==========================
-Route::get('/order', [OrderController::class, 'order']);
-Route::post('/add-to-cart', [CartController::class, 'addToCart']);
-Route::get('/cart', [CartController::class, 'showCart']);
-Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart']);
 
-// Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout');
-// Route::post('/process-checkout', [CartController::class, 'processCheckout']);
-Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+// Route utama untuk halaman Maminko (menu customer)
+// Akan memanggil MenuController@maminkoIndex untuk mendapatkan data menu dari database
+Route::get('/maminko', [MenuController::class, 'maminkoIndex'])->name('maminko.index');
 
-// ==========================
-// Profil (hanya untuk user yang login)
-// ==========================
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// Route untuk menampilkan detail satu menu (customer)
+// Akan memanggil MenuController@showDetail untuk mendapatkan detail menu dari database
+Route::get('/menu/{name}', [MenuController::class, 'showDetail'])->name('menu.detail');
+
+// Route untuk menampilkan halaman checkout (GET)
+// Akan memanggil CheckoutController@index untuk menampilkan form checkout
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+
+// Route untuk menambahkan item ke keranjang
+Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add');
+// Route untuk menampilkan halaman keranjang
+Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
+// Route untuk menghapus item dari keranjang
+Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
+
+// Route untuk memproses pesanan dari halaman checkout (POST)
+// Akan memanggil OrderController@store untuk menyimpan pesanan ke database
+Route::post('/order/store', [OrderController::class, 'store'])->name('order.store');
+
 
 // ==========================
 // Route Otomatis dari Laravel Breeze / Jetstream (jika digunakan)
