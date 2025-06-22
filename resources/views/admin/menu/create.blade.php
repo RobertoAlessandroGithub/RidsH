@@ -8,15 +8,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa; /* Warna latar belakang ringan */
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
         }
         .card {
-            border-radius: 0.75rem; /* Sudut membulat */
-            border: none; /* Hilangkan border default */
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* Tambah bayangan */
+            border-radius: 0.75rem;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
         }
         .card-header {
-            background-color: #007bff; /* Warna biru Bootstrap primary */
+            background-color: #007bff;
             color: white;
             border-top-left-radius: 0.75rem;
             border-top-right-radius: 0.75rem;
@@ -45,13 +46,12 @@
 <body>
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-7"> {{-- Ubah ukuran kolom agar sedikit lebih lebar --}}
+            <div class="col-md-7">
                 <div class="card">
                     <div class="card-header">
                         <h1 class="h4 mb-0">Tambah Item Baru</h1>
                     </div>
                     <div class="card-body">
-                        {{-- Bagian untuk menampilkan pesan sukses atau error --}}
                         @if(session('success'))
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 {{ session('success') }}
@@ -78,10 +78,8 @@
                             </div>
                         @endif
 
-                        {{-- Form untuk menambahkan data --}}
-                        {{-- Sesuaikan 'action' dengan route POST Anda, contoh: route('menu.store') --}}
-                        <form action="{{-- route('nama-resource.store') --}}" method="POST" enctype="multipart/form-data">
-                            @csrf {{-- Token CSRF untuk keamanan Laravel --}}
+                        <form action="{{ route('menu.store') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
 
                             <div class="mb-3">
                                 <label for="name" class="form-label">Nama Item:</label>
@@ -89,9 +87,12 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="description" class="form-label">Deskripsi:</label>
-                                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Contoh: Nasi goreng spesial dengan telur dan ayam suwir" required>{{ old('description') }}</textarea>
+                                <label for="description" class="form-label">Deskripsi Singkat:</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Contoh: Nasi goreng spesial dengan telur dan ayam suwir" required>{{ old('description') }}</textarea>
                             </div>
+
+                            {{-- Field detailed_description DIHAPUS --}}
+                            {{-- Field detailed_description DIHAPUS --}}
 
                             <div class="mb-3">
                                 <label for="price" class="form-label">Harga:</label>
@@ -115,8 +116,7 @@
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg">Simpan Item</button>
-                                {{-- Sesuaikan 'href' dengan route kembali Anda, contoh: route('menu.index') --}}
-                                <a href="{{-- route('nama-resource.index') --}}" class="btn btn-secondary btn-lg">Kembali</a>
+                                <a href="{{ route('menu.index') }}" class="btn btn-secondary btn-lg">Kembali</a>
                             </div>
                         </form>
                     </div>

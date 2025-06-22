@@ -15,11 +15,15 @@ class MenuController extends Controller
      */
     public function index()
     {
-        $menus = Menu::all();
-        // SESUAIKAN PATH VIEW INI! Harusnya ke daftar menu admin, bukan dashboard.
-        // Asumsi: resources/views/admin/menu/index.blade.php
-        return view('admin.menu.index', compact('menus'));
+        $menus = \App\Models\Menu::all();
+        return view('admin.menu.index', compact('menus')); // Ubah dari 'index' menjadi 'menu-card'
     }
+
+    // app/Http/Controllers/MenuController.php
+
+// ... (bagian atas)
+
+    // ... (metode lainnya: create, store, show, edit, update, destroy)
 
     /**
      * Show the form for creating a new resource.
@@ -39,43 +43,41 @@ class MenuController extends Controller
     public function store(Request $request)
     {
         try {
+            // Validasi data yang masuk dari form
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255|unique:menus,name',
                 'description' => 'required|string',
+                'detailed_description' => 'nullable|string', // Pastikan kolom ini ada di DB atau hapus
                 'price' => 'required|numeric|min:0',
+                'category' => 'nullable|string|max:255', // Pastikan kolom ini ada di DB atau hapus
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                // Pastikan Anda juga menambahkan field 'category' jika ada di form create Anda.
-                // 'category' => 'nullable|string|max:255',
             ]);
 
-            // Handle multiple images if your 'images' column is cast to array in Menu Model
-            // If your 'image' field in DB is a single string for one image:
+            // Handle upload gambar jika ada
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('menu_images', 'public');
                 $validatedData['image'] = $imagePath;
+            } else {
+                $validatedData['image'] = null; // Set null jika tidak ada gambar diupload
             }
-            // If you intend to save multiple images as JSON array:
-            // if ($request->hasFile('images')) { // If input name is 'images[]'
-            //     $imagePaths = [];
-            //     foreach ($request->file('images') as $file) {
-            //         $path = $file->store('menu_images', 'public');
-            //         $imagePaths[] = $path;
-            //     }
-            //     $validatedData['images'] = $imagePaths;
-            // } else {
-            //     $validatedData['images'] = []; // Ensure it's an empty array if no images
-            // }
 
+            // Simpan data menu ke database
             Menu::create($validatedData);
 
+            // Redirect ke halaman daftar menu dengan pesan sukses
             return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan!');
+
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Tangani error validasi
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
+            // Tangani error umum lainnya
             return back()->withInput()->with('error', 'Gagal menyimpan menu: '.$e->getMessage());
         }
     }
 
+    // Tambahkan method lain (show, edit, update, destroy, maminkoIndex, showDetail) di sini nanti
+    // Untuk saat ini, kita fokus pada create dan store
     /**
      * Display the specified resource. (Biasanya untuk halaman admin detail satu menu)
      * URL: /menu/{menu} (GET)
@@ -104,16 +106,17 @@ class MenuController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'name' => 'required|string|max:255|unique:menus,name,' . $menu->id,
+                'name' => 'required|string|max:255|unique:menus,name,' . $menu->id, // unique:menus,name,ID_menu_saat_ini
                 'description' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                // 'category' => 'nullable|string|max:255',
+                'detailed_description' => 'nullable|string', // Tambahkan validasi jika field ini ada
+                'category' => 'nullable|string|max:255', // Tambahkan validasi jika field ini ada
             ]);
 
             if ($request->hasFile('image')) {
                 // Hapus gambar lama jika ada
-                if ($menu->image) {
+                if ($menu->image && Storage::disk('public')->exists($menu->image)) {
                     Storage::disk('public')->delete($menu->image);
                 }
                 // Simpan gambar baru
@@ -123,23 +126,6 @@ class MenuController extends Controller
                 // Jika tidak ada gambar baru di-upload, pertahankan gambar lama
                 $validatedData['image'] = $menu->image;
             }
-            // Jika Anda mengelola multiple images sebagai array JSON:
-            // if ($request->hasFile('images')) {
-            //     if ($menu->images) {
-            //         foreach ($menu->images as $oldImage) {
-            //             Storage::disk('public')->delete($oldImage);
-            //         }
-            //     }
-            //     $imagePaths = [];
-            //     foreach ($request->file('images') as $file) {
-            //         $path = $file->store('menu_images', 'public');
-            //         $imagePaths[] = $path;
-            //     }
-            //     $validatedData['images'] = $imagePaths;
-            // } else {
-            //     $validatedData['images'] = $menu->images; // Pertahankan gambar lama jika tidak ada upload baru
-            // }
-
 
             $menu->update($validatedData);
 
@@ -151,6 +137,7 @@ class MenuController extends Controller
         }
     }
 
+
     /**
      * Remove the specified resource from storage.
      * URL: /menu/{menu} (DELETE)
@@ -158,16 +145,10 @@ class MenuController extends Controller
     public function destroy(Menu $menu)
     {
         try {
-            // Hapus gambar dari storage jika ada (untuk single image)
-            if ($menu->image) {
+            // Hapus gambar dari storage jika ada
+            if ($menu->image && Storage::disk('public')->exists($menu->image)) {
                 Storage::disk('public')->delete($menu->image);
             }
-            // Jika Anda mengelola multiple images sebagai array JSON:
-            // if ($menu->images) {
-            //     foreach ($menu->images as $imagePath) {
-            //         Storage::disk('public')->delete($imagePath);
-            //     }
-            // }
 
             $menu->delete();
             return redirect()->route('menu.index')->with('success', 'Menu berhasil dihapus!');

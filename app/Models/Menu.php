@@ -16,7 +16,7 @@ class Menu extends Model
         'image', // Jika hanya menyimpan satu gambar sebagai string path
         // 'images', // Jika Anda punya kolom 'images' untuk menyimpan array JSON dari path gambar
         // 'category_id', // Jika Anda punya kolom untuk kategori
-        'detailed_description', // Tambahkan jika ada kolom ini di DB
+        'category', // Tambahkan jika ada kolom ini di DB
         // 'average_rating',
         // 'total_ratings',
         // 'reviews',
