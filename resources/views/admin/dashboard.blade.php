@@ -155,7 +155,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-3">
-                        <a href="{{ route('menu.create') }}" class="btn btn-success btn-lg">
+                        <a href="{{ route('admin.menu.create') }}" class="btn btn-success btn-lg">
                             <i class="fas fa-plus me-2"></i>Tambah Menu Baru
                         </a>
                         <a href="{{ route('menu.index') }}" class="btn btn-info btn-lg">

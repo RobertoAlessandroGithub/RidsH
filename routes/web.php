@@ -50,24 +50,24 @@ Route::post('/logout', function () {
 // ======================================================================
 
 // Admin Dashboard
+// Akses URL: http://localhost:8000/admin/dashboard
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
-// Menu CRUD (Resourceful routes untuk Admin)
-// Ini akan menangani:
-// GET /menu          -> MenuController@index   (Daftar semua menu)
-// GET /menu/create   -> MenuController@create  (Form tambah menu baru)
-// POST /menu         -> MenuController@store   (Simpan menu baru)
-// GET /menu/{menu}   -> MenuController@show    (Detail menu admin)
-// GET /menu/{menu}/edit -> MenuController@edit (Form edit menu)
-// PUT/PATCH /menu/{menu} -> MenuController@update (Update menu)
-// DELETE /menu/{menu} -> MenuController@destroy (Hapus menu)
+// Menu CRUD (Resourceful routes untuk Admin, sekarang publik sementara)
+// Ini akan menangani semua operasi CRUD menu
+// Contoh URL:
+// - Daftar Menu: http://localhost:8000/menu
+// - Form Tambah: http://localhost:8000/menu/create
+// - Submit Tambah: POST ke http://localhost:8000/menu
 Route::resource('menu', MenuController::class);
 
-// Route khusus untuk tampilan delete menu (jika ada tampilan terpisah, biasanya dihandle oleh resource index)
+// Route khusus untuk tampilan delete menu (jika ada tampilan terpisah)
+// Akses URL: http://localhost:8000/admin/menu/delete-view
 Route::get('/admin/menu/delete-view', [MenuController::class, 'deleteView'])->name('admin.menu.delete-view');
 
-// Manajemen Pesanan (Resourceful routes untuk Admin)
-// Ini akan membuat orders.index, orders.show, dll.
+// Manajemen Pesanan (Resourceful routes untuk Admin, sekarang publik sementara)
+// Contoh URL:
+// - Daftar Pesanan: http://localhost:8000/orders
 Route::resource('orders', OrderController::class);
 
 
@@ -81,24 +81,26 @@ Route::resource('orders', OrderController::class);
 // ==========================
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard standar untuk user biasa (jika ada)
+    // Akses URL: http://localhost:8000/dashboard (setelah login sebagai user biasa)
 
 
     // Profil User Biasa
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Jika ada route Order History khusus user biasa yang berbeda dengan admin.orders.index
-    // Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('my-orders.index');
 });
 
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard'); // Ini mengarah ke resources/views/dashboard.blade.php
+    })->name('dashboard');
+
+    Route::get('/create', function () {
+        return view('admin.menu.create'); // Ini mengarah ke resources/views/dashboard.blade.php
+    })->name('create');
 
 // ==========================
 // General Public Routes (bisa diakses tanpa login)
 // ==========================
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard'); // View 'dashboard.blade.php' (bukan admin.dashboard)
-    })->name('dashboard');
 
 // Rooms
 Route::get('/rooms', function () {
@@ -115,15 +117,15 @@ Route::get('/kamar-deluxe', function () {
 // ==========================
 
 // Route utama untuk halaman Maminko (menu customer)
-// Akan memanggil MenuController@maminkoIndex untuk mendapatkan data menu dari database
+// Akses URL: http://localhost:8000/maminko
 Route::get('/maminko', [MenuController::class, 'maminkoIndex'])->name('maminko.index');
 
 // Route untuk menampilkan detail satu menu (customer)
-// Akan memanggil MenuController@showDetail untuk mendapatkan detail menu dari database
+// Akses URL: http://localhost:8000/menu/{nama-menu-anda} (misal: /menu/Pizza%20Margherita%20Classic)
 Route::get('/menu/{name}', [MenuController::class, 'showDetail'])->name('menu.detail');
 
 // Route untuk menampilkan halaman checkout (GET)
-// Akan memanggil CheckoutController@index untuk menampilkan form checkout
+// Akses URL: http://localhost:8000/checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
 // Route untuk menambahkan item ke keranjang
@@ -134,7 +136,6 @@ Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
 
 // Route untuk memproses pesanan dari halaman checkout (POST)
-// Akan memanggil OrderController@store untuk menyimpan pesanan ke database
 Route::post('/order/store', [OrderController::class, 'store'])->name('order.store');
 
 

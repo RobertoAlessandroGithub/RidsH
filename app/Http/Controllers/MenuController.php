@@ -29,7 +29,7 @@ class MenuController extends Controller
     {
         // SESUAIKAN PATH VIEW INI! Sesuai nama file create-menu.blade.php
         // Asumsi: resources/views/admin/menu/create-menu.blade.php
-        return view('admin.menu.create-menu');
+        return view('admin.menu.create');
     }
 
     /**
