@@ -81,9 +81,7 @@ Route::resource('orders', OrderController::class);
 // ==========================
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard standar untuk user biasa (jika ada)
-    Route::get('/dashboard', function () {
-        return view('dashboard'); // View 'dashboard.blade.php' (bukan admin.dashboard)
-    })->name('dashboard');
+
 
     // Profil User Biasa
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -98,6 +96,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ==========================
 // General Public Routes (bisa diakses tanpa login)
 // ==========================
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard'); // View 'dashboard.blade.php' (bukan admin.dashboard)
+    })->name('dashboard');
 
 // Rooms
 Route::get('/rooms', function () {
