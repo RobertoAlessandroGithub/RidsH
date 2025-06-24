@@ -1,10 +1,10 @@
 {{-- resources/views/admin/menu/index.blade.php --}}
 
-@extends('layouts.admin') {{-- PASTIKAN INI ADALAH BARIS PERTAMA, TANPA SPASI ATAU KARAKTER APAPUN DI ATASNYA --}}
+@extends('layouts.admin')
 
-@section('title', 'Kelola Menu Restoran') {{-- Judul halaman untuk browser tab --}}
+@section('title', 'Kelola Menu Restoran')
 
-@section('content') {{-- MULAI SEKSI KONTEN UTAMA HALAMAN INI --}}
+@section('content')
     <h1 class="h3 mb-4 text-gray-800">Manajemen Item Menu</h1>
 
     {{-- Notifikasi Sukses/Error --}}
@@ -32,7 +32,7 @@
     {{-- Konten Daftar Menu --}}
     <div class="menu-container row" id="menuList">
         @forelse($menus as $menu)
-            <div class="col-lg-4 col-md-6 mb-4">
+            <div class="col-lg-4 col-md-6 mb-4 menu-card-col" data-menu-id="{{ $menu->id }}">
                 <div class="card shadow rounded-xl h-100 d-flex flex-column justify-content-between">
                     {{-- Gambar Menu --}}
                     <img src="{{ asset('storage/' . ($menu->image ?? 'images/default-food.jpg')) }}"
@@ -42,8 +42,13 @@
                         <h5 class="card-title font-weight-bold mb-2">{{ $menu->name }}</h5>
                         <p class="card-text text-gray-600 mb-2 truncate-text">{{ $menu->description }}</p>
                         <p class="text-primary font-weight-bold mb-2">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                        <p class="text-sm text-gray-500 mb-1">Kategori: {{ $menu->category ?? 'Belum Ada' }}</p>
+                        <p class="text-sm text-gray-500 mb-1">Kategori: <span class="menu-category-display">{{ $menu->category ?? 'Belum Ada' }}</span></p>
                         <p class="text-sm text-gray-500">Dibuat: {{ $menu->created_at->format('d M Y') }}</p>
+                        <p class="text-sm">Status:
+                            <span class="badge rounded-pill px-2 py-1 {{ $menu->is_active ? 'bg-success' : 'bg-secondary' }}">
+                                {{ $menu->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </p>
                     </div>
 
                     {{-- Tombol Aksi Admin --}}
@@ -51,8 +56,14 @@
                         <a href="{{ route('menu.edit', $menu->id) }}" class="btn btn-info btn-sm text-white rounded-full">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>
-                        <button type="button" class="btn btn-danger btn-sm rounded-full" data-bs-toggle="modal" data-bs-target="#deleteMenuModal" data-id="{{ $menu->id }}" data-name="{{ $menu->name }}">
-                            <i class="fas fa-trash-alt me-1"></i> Hapus
+                        {{-- TOMBOL TOGGLE STATUS --}}
+                        <button type="button" class="btn btn-sm rounded-full {{ $menu->is_active ? 'btn-warning' : 'btn-success' }}"
+                                data-bs-toggle="modal" data-bs-target="#toggleStatusModal"
+                                data-id="{{ $menu->id }}"
+                                data-name="{{ $menu->name }}"
+                                data-current-status="{{ $menu->is_active ? 'aktif' : 'nonaktif' }}">
+                            <i class="fas fa-toggle-{{ $menu->is_active ? 'off' : 'on' }} me-1"></i>
+                            {{ $menu->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                         </button>
                         <a href="{{ route('menu.show', $menu->id) }}" class="btn btn-secondary btn-sm rounded-full">
                             <i class="fas fa-eye me-1"></i> Detail
@@ -70,52 +81,68 @@
         @endforelse
     </div>
 
-    {{-- Modal Konfirmasi Hapus --}}
-    <div class="modal fade" id="deleteMenuModal" tabindex="-1" role="dialog" aria-labelledby="deleteMenuModalLabel" aria-hidden="true">
+    {{-- Modal Konfirmasi Toggle Status --}}
+    <div class="modal fade" id="toggleStatusModal" tabindex="-1" role="dialog" aria-labelledby="toggleStatusModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content rounded-xl">
-                <div class="modal-header bg-danger text-white rounded-t-xl">
-                    <h5 class="modal-title" id="deleteMenuModalLabel">Konfirmasi Hapus Menu</h5>
+                <div class="modal-header text-white rounded-t-xl">
+                    <h5 class="modal-title" id="toggleStatusModalLabel">Konfirmasi Perubahan Status Menu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Apakah Anda yakin ingin menghapus menu "<strong id="menuNameToDelete"></strong>"?
-                    Tindakan ini tidak dapat dibatalkan.
+                    Apakah Anda yakin ingin <span id="actionText" class="font-weight-bold"></span> menu "<strong id="menuNameToToggle"></strong>"?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary rounded-lg" data-bs-dismiss="modal">Batal</button>
-                    <form id="deleteForm" method="POST" action="">
+                    <form id="toggleStatusForm" method="POST" action="">
                         @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger rounded-lg">Hapus Permanen</button>
+                        <button type="submit" class="btn rounded-lg" id="confirmToggleButton">Konfirmasi</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-@endsection {{-- AKHIR SEKSI KONTEN UTAMA --}}
+@endsection
 
-@push('scripts') {{-- MULAI SEKSI SCRIPT KHUSUS UNTUK HALAMAN INI --}}
+@push('scripts')
 <script>
-    AOS.init();
+    // AOS.init(); // Aktifkan jika Anda memiliki library AOS yang dimuat di layout admin
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Logika untuk mengisi data modal hapus
-        var deleteMenuModal = document.getElementById('deleteMenuModal');
-        if (deleteMenuModal) {
-            deleteMenuModal.addEventListener('show.bs.modal', function (event) {
-                var button = event.relatedTarget;
+        // Logika untuk mengisi data modal toggle status
+        var toggleStatusModal = document.getElementById('toggleStatusModal');
+        if (toggleStatusModal) {
+            toggleStatusModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget; // Tombol yang memicu modal
                 var menuId = button.getAttribute('data-id');
                 var menuName = button.getAttribute('data-name');
+                var currentStatus = button.getAttribute('data-current-status');
 
-                var modalBodyInput = deleteMenuModal.querySelector('#menuNameToDelete');
-                var deleteForm = deleteMenuModal.querySelector('#deleteForm');
+                var modalHeader = toggleStatusModal.querySelector('.modal-header');
+                var actionText = toggleStatusModal.querySelector('#actionText');
+                var menuNameToToggle = toggleStatusModal.querySelector('#menuNameToToggle');
+                var confirmToggleButton = toggleStatusModal.querySelector('#confirmToggleButton');
+                var toggleStatusForm = toggleStatusModal.querySelector('#toggleStatusForm');
 
-                if (modalBodyInput) {
-                    modalBodyInput.textContent = menuName;
+                // Memastikan elemen ada sebelum mengisi teks
+                if (menuNameToToggle) {
+                    menuNameToToggle.textContent = menuName;
                 }
-                if (deleteForm) {
-                    deleteForm.action = `/menu/${menuId}`;
+
+                // Atur teks aksi dan warna tombol/header modal
+                if (currentStatus === 'aktif') {
+                    if (actionText) actionText.textContent = 'menonaktifkan';
+                    if (modalHeader) modalHeader.className = 'modal-header bg-warning text-white rounded-t-xl';
+                    if (confirmToggleButton) confirmToggleButton.className = 'btn btn-warning rounded-lg';
+                } else {
+                    if (actionText) actionText.textContent = 'mengaktifkan kembali';
+                    if (modalHeader) modalHeader.className = 'modal-header bg-success text-white rounded-t-xl';
+                    if (confirmToggleButton) confirmToggleButton.className = 'btn btn-success rounded-lg';
+                }
+
+                // Atur action form untuk POST ke route toggle-status
+                if (toggleStatusForm) {
+                    toggleStatusForm.action = `/menu/${menuId}/toggle-status`;
                 }
             });
         }
@@ -125,34 +152,33 @@
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 const keyword = this.value.toLowerCase();
-                const menuContainer = document.getElementById('menuList');
-                if (menuContainer) {
-                    const menuCards = menuContainer.querySelectorAll('.col-lg-4.col-md-6.mb-4');
+                const menuCards = document.querySelectorAll('.menu-card-col');
 
-                    menuCards.forEach(cardCol => {
-                        const cardTitle = cardCol.querySelector('.card-title');
-                        const cardText = cardCol.querySelector('.card-text');
+                menuCards.forEach(cardCol => {
+                    const cardTitle = cardCol.querySelector('.card-title');
+                    const cardDescription = cardCol.querySelector('.card-text');
+                    const cardCategory = cardCol.querySelector('.menu-category-display');
 
-                        const name = cardTitle ? cardTitle.innerText.toLowerCase() : '';
-                        const description = cardText ? cardText.innerText.toLowerCase() : '';
+                    const name = cardTitle ? cardTitle.innerText.toLowerCase() : '';
+                    const description = cardDescription ? cardDescription.innerText.toLowerCase() : '';
+                    const category = cardCategory ? cardCategory.innerText.toLowerCase() : '';
+                    const statusText = cardCol.querySelector('.badge') ? cardCol.querySelector('.badge').innerText.toLowerCase() : '';
 
-                        if (name.includes(keyword) || description.includes(keyword)) {
-                            cardCol.style.display = 'block';
-                        } else {
-                            cardCol.style.display = 'none';
-                        }
-                    });
-                }
+                    if (name.includes(keyword) || description.includes(keyword) || category.includes(keyword) || statusText.includes(keyword)) {
+                        cardCol.style.display = 'block';
+                    } else {
+                        cardCol.style.display = 'none';
+                    }
+                });
             });
         }
     });
 </script>
 <style>
-    /* Styling khusus untuk truncate text di kartu menu */
     .truncate-text {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 </style>
-@endpush {{-- AKHIR SEKSI SCRIPT KHUSUS --}}
+@endpush

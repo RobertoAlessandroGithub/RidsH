@@ -1,167 +1,108 @@
 <?php
 
-namespace App\Http\Controllers;
+    namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Table; // Ditambahkan
-use Midtrans\Config;
-use Midtrans\Snap;
+    use App\Models\Order;
+    use App\Models\OrderItem;
+    use App\Models\Menu;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\DB;
 
-class OrderController extends Controller
-{
-
-    public function index()
+    class OrderController extends Controller
     {
-        // Ambil semua pesanan dari database
-        $orders = Order::all();
-
-        // Kembalikan view dengan data pesanan
-        return view('orders.index', compact('orders'));
-    }
-
-    public function addToCart(Request $request)
-    {
-        $request->validate([
-            'id' => 'required',
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'quantity' => 'required|numeric|min:1'
-        ]);
-
-        $menuId = $request->id;
-        $menuName = $request->name;
-        $price = $request->price;
-        $quantity = $request->quantity;
-    
-        $cart = session()->get('cart', []);
-    
-        // Kalau barang sudah ada di cart, tambahkan qty-nya
-        if (isset($cart[$menuId])) {
-            $cart[$menuId]['quantity'] += $quantity;
-        } else {
-            $cart[$menuId] = [
-                'name' => $menuName,
-                'price' => $price,
-                'quantity' => $quantity,
-            ];
+        /**
+         * Display a listing of the orders.
+         */
+        public function index()
+        {
+            $orders = Order::orderBy('created_at', 'desc')->get();
+            return view('admin.order.index', compact('orders'));
         }
-    
-        session()->put('cart', $cart);
-    
-        return response()->json([
-            'message' => 'Menu ditambahkan ke keranjang',
-            'cart_count' => count($cart) // Untuk menampilkan jumlah item di cart
-        ]);
-    }
-    
-    public function cartView()
-    {
-        $cart = session()->get('cart', []);
-        $tables = Table::all();
-    
-        // Hitung total harga
-        $total = 0;
-        foreach ($cart as $item) {
-            $total += $item['price'] * $item['quantity'];
-        }
-    
-        return view('customer.checkout', compact('cart', 'tables', 'total'));
-    }
-    
-    public function clearCart()
-    {
-        session()->forget('cart');
-        return redirect('/menu')->with('success', 'Keranjang dikosongkan.');
-    }
 
-    public function checkoutView()
-    {
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
-            return redirect('/menu')->with('error', 'Keranjang belanja kosong.');
-        }
-        
-        $tables = Table::all();
-        return view('customer.checkout', compact('cart', 'tables'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'table_id' => 'required|exists:tables,id',
-            'notes' => 'nullable|string'
-        ]);
-        
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
-            return back()->with('error', 'Keranjang belanja kosong.');
-        }
-        
-        // Hitung total
-        $total = 0;
-        $items = [];
-        foreach ($cart as $id => $item) {
-            $total += $item['price'] * $item['quantity'];
-            $items[] = [
-                'id' => $id,
-                'name' => $item['name'],
-                'price' => $item['price'],
-                'quantity' => $item['quantity']
-            ];
-        }
-        
-        // Simpan order ke database
-        $order = Order::create([
-            'user_id' => auth()->id() ?? null,
-            'table_id' => $request->table_id,
-            'total' => $total,
-            'notes' => $request->notes,
-            'status' => 'pending'
-        ]);
-        
-        // Simpan item order
-        foreach ($cart as $id => $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'menu_id' => $id,
-                'quantity' => $item['quantity'],
-                'price' => $item['price']
+        /**
+         * Store a newly created order in storage.
+         */
+        public function store(Request $request)
+        {
+            // Validasi data yang masuk
+            $validatedData = $request->validate([
+                'customer_name' => 'required|string|max:255', // Nama sekarang required
+                'customer_phone' => 'nullable|string|max:20', // Tambahkan validasi untuk nomor telepon
+                'table_number' => 'nullable|string|max:255',
+                'notes' => 'nullable|string|max:1000',
+                'total_amount' => 'required|numeric|min:0',
+                'order_items' => 'required|array',
+                'order_items.*.menu_name' => 'required|string|max:255',
+                'order_items.*.quantity' => 'required|integer|min:1',
+                'order_items.*.price_at_order' => 'required|numeric|min:0',
+                'payment_method' => 'required|string|in:cash,qr', // Tambahkan validasi metode pembayaran
             ]);
+
+            DB::beginTransaction();
+
+            try {
+                // Buat pesanan utama
+                $order = Order::create([
+                    'customer_name' => $validatedData['customer_name'],
+                    'customer_phone' => $validatedData['customer_phone'], // Simpan nomor telepon
+                    'table_number' => $validatedData['table_number'],
+                    'total_amount' => $validatedData['total_amount'],
+                    'notes' => $validatedData['notes'],
+                    'status' => 'pending',
+                    'payment_method' => $validatedData['payment_method'], // Simpan metode pembayaran
+                ]);
+
+                // Simpan setiap item pesanan
+                foreach ($validatedData['order_items'] as $itemData) {
+                    $menu = Menu::where('name', $itemData['menu_name'])->first();
+
+                    if (!$menu) {
+                        DB::rollBack();
+                        return response()->json(['message' => 'Menu "' . $itemData['menu_name'] . '" tidak ditemukan.'], 404);
+                    }
+
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'menu_id' => $menu->id,
+                        'quantity' => $itemData['quantity'],
+                        'price' => $itemData['price_at_order'],
+                    ]);
+                }
+
+                DB::commit();
+
+                return response()->json(['message' => 'Pesanan berhasil dibuat dan disimpan!'], 201);
+
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                DB::rollBack();
+                return response()->json(['errors' => $e->errors()], 422);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['message' => 'Gagal membuat pesanan: ' . $e->getMessage()], 500);
+            }
         }
-        
-        // Generate payment URL (Midtrans)
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$isProduction = config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-        
-        $params = [
-            'transaction_details' => [
-                'order_id' => $order->id.'-'.time(),
-                'gross_amount' => $total,
-            ],
-            'customer_details' => [
-                'first_name' => auth()->user()->name ?? 'Guest',
-                'email' => auth()->user()->email ?? 'guest@example.com',
-            ]
-        ];
-        
-        try {
-            $paymentUrl = Snap::createTransaction($params)->redirect_url;
-            
-            // Kosongkan keranjang setelah checkout
-            session()->forget('cart');
-            
-            return response()->json([
-                'payment_url' => $paymentUrl,
-                'order_id' => $order->id
+
+        /**
+         * Display the specified order.
+         */
+        public function show(Order $order)
+        {
+            $order->load('items.menu');
+
+            return view('admin.order.show', compact('order'));
+        }
+
+        /**
+         * Update the specified order in storage. (Untuk mengubah status pesanan)
+         */
+        public function update(Request $request, Order $order)
+        {
+            $validatedData = $request->validate([
+                'status' => 'required|string|in:pending,preparing,ready,completed,cancelled',
             ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Pembayaran gagal: '.$e->getMessage()
-            ], 500);
+
+            $order->update($validatedData);
+
+            return back()->with('success', 'Status pesanan berhasil diperbarui!');
         }
     }
-}

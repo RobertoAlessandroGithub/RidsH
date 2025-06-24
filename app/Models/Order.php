@@ -1,22 +1,29 @@
 <?php
 
-namespace App\Models;
+    namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-class Order extends Model
-{
-    use HasFactory;
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
+    use Illuminate\Database\Eloquent\Model;
 
-    protected $fillable = [ 
-        'name',
-        'table_number',
-        'total_price',
-        'items',
-        'status',
-    ];
+    class Order extends Model
+    {
+        use HasFactory;
 
-    protected $casts = [
-        'items' => 'array',  // Untuk memastikan 'items' disimpan sebagai array atau JSON
-    ];
-}
+        protected $fillable = [
+            'customer_name',
+            'customer_phone',
+            'table_number',
+            'total_amount',
+            'status',
+            'notes',
+            'payment_method',
+        ];
+
+        /**
+         * Get the order items for the order.
+         */
+        public function items()
+        {
+            return $this->hasMany(OrderItem::class);
+        }
+    }

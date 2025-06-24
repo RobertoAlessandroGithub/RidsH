@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Checkout - Maminko</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -18,7 +19,6 @@
 </head>
 <body class="bg-gray-50 font-sans">
 
-    {{-- PENTING: Pindahkan definisi fungsi formatRupiah() keluar dari komentar agar di-parse oleh PHP --}}
     @php
         $voucher_amount = 10000;
 
@@ -35,7 +35,7 @@
         <a href="/maminko" class="text-gray-600 hover:text-orange-500 mb-6 inline-block">&larr; Kembali ke Menu</a>
         <h1 class="text-3xl font-bold text-center mb-8">Checkout</h1>
 
-        <form id="checkoutForm" action="{{-- route('order.store') --}}" method="POST">
+        <form id="checkoutForm" action="{{ route('order.store') }}" method="POST"> {{-- Uncommented route --}}
             @csrf
 
             <input type="hidden" id="cartDataInput" name="cart_data">
@@ -55,6 +55,11 @@
                     <div>
                         <label for="table_number" class="block text-sm font-medium text-gray-700">Nomor Meja</label>
                         <input type="text" id="table_number" name="table_number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500" placeholder="Contoh: 12" required>
+                    </div>
+                    {{-- Added Catatan Tambahan (Additional Notes) --}}
+                    <div>
+                        <label for="order_notes" class="block text-sm font-medium text-gray-700">Catatan Tambahan (Opsional)</label>
+                        <textarea id="order_notes" name="order_notes" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500" placeholder="Contoh: Tanpa bawang, extra pedas, dll."></textarea>
                     </div>
                 </div>
             </div>

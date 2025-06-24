@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('menus', function (Blueprint $table) {
-            // Hanya tambahkan kolom 'category' jika belum ada
-            if (!Schema::hasColumn('menus', 'category')) {
-                $table->string('category')->nullable()->after('price');
+            // Tambahkan kolom 'is_active' dengan tipe boolean.
+            // Defaultnya adalah true (aktif) dan ditempatkan setelah kolom 'image'.
+            if (!Schema::hasColumn('menus', 'is_active')) {
+                $table->boolean('is_active')->default(true)->after('image');
             }
         });
     }
@@ -25,9 +26,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('menus', function (Blueprint $table) {
-            // Hapus kolom 'category' jika ada
-            if (Schema::hasColumn('menus', 'category')) {
-                $table->dropColumn('category');
+            // Hapus kolom 'is_active' jika rollback migrasi
+            if (Schema::hasColumn('menus', 'is_active')) {
+                $table->dropColumn('is_active');
             }
         });
     }

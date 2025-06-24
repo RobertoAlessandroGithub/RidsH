@@ -169,7 +169,7 @@
             <div class="card shadow h-100 py-3 rounded-xl">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 text-gray-800"><i class="fas fa-tags me-3 text-success"></i>Manajemen Kategori</h5>
-                    <a href="{{-- route('categories.index') --}}" class="btn btn-success rounded-full">Kelola Kategori <i class="fas fa-arrow-right ms-2"></i></a>
+                    <a href="{{ route('categories.index') }}" class="btn btn-success rounded-full">Kelola Kategori <i class="fas fa-arrow-right ms-2"></i></a>
                 </div>
             </div>
         </div>

@@ -6,25 +6,38 @@
     <title>@yield('title', 'Admin Panel')</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome untuk icons -->
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        html, body {
+            height: 100%; /* Ensure html and body take full height */
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5; /* Latar belakang abu-abu muda */
+            background-color: #f0f2f5;
+            display: flex; /* Use flexbox for body to ensure full height for #wrapper */
+            flex-direction: column;
         }
         #wrapper {
             display: flex;
+            flex: 1; /* Allow wrapper to grow and fill available space */
         }
         #sidebar {
             min-width: 250px;
             max-width: 250px;
-            background-color: #2c3e50; /* Warna gelap untuk sidebar */
+            background-color: #2c3e50;
             color: white;
             transition: all 0.3s;
+            display: flex; /* Use flexbox for sidebar to ensure content pushes to bottom */
+            flex-direction: column;
+            height: 100%; /* Ensure sidebar takes full height of its parent */
+            position: sticky; /* Keep sidebar fixed when scrolling content */
+            top: 0; /* Align to top of viewport */
         }
         #sidebar.toggled {
-            margin-left: -250px; /* Sembunyikan sidebar */
+            margin-left: -250px;
         }
         #sidebar .sidebar-heading {
             font-size: 1.2rem;
@@ -32,6 +45,9 @@
             padding: 20px 0;
             border-bottom: 1px solid #4a6572;
             color: #f8f9fa;
+        }
+        #sidebar .list-group {
+            flex-grow: 1; /* Allow list group to take available space */
         }
         #sidebar .list-group-item {
             background-color: transparent;
@@ -43,23 +59,32 @@
         }
         #sidebar .list-group-item:hover,
         #sidebar .list-group-item.active {
-            background-color: #34495e; /* Hover/active color */
+            background-color: #34495e;
             color: #ffffff;
-            border-radius: 0; /* Remove border-radius on list items */
+            border-radius: 0;
         }
         #sidebar .list-group-item .fas {
-            width: 25px; /* Fixed width for icons */
+            width: 25px;
             text-align: center;
             margin-right: 10px;
         }
         #page-content-wrapper {
             width: 100%;
             overflow-x: hidden;
+            display: flex; /* Use flexbox for content wrapper */
+            flex-direction: column;
+            min-height: 100vh; /* Ensure content wrapper always takes at least 100% of viewport height */
+            flex-grow: 1; /* Allow it to grow and fill remaining space */
         }
-        .navbar {
+        #page-content-wrapper .navbar {
             background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 1rem 1.5rem;
+            flex-shrink: 0; /* Prevent navbar from shrinking */
+        }
+        #page-content-wrapper .container-fluid {
+            flex-grow: 1; /* Allow content area to grow */
+            padding-bottom: 2rem; /* Add some padding at the bottom */
         }
         .card {
             border-radius: 0.75rem;
@@ -107,18 +132,16 @@
                 <a href="{{ route('menu.create') }}" class="list-group-item">
                     <i class="fas fa-fw fa-plus-circle"></i>Tambah Menu
                 </a>
-                {{-- Anda perlu membuat route dan controller untuk kategori --}}
-                <a href="#" class="list-group-item">
+                <a href="{{ route('categories.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-tags"></i>Manajemen Kategori
                 </a>
                 <a href="{{ route('orders.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-clipboard-list"></i>Manajemen Pesanan
                 </a>
-                {{-- Contoh link lain --}}
-                <a href="#" class="list-group-item">
+                <a href="{{ route('admin.reports.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-chart-line"></i>Laporan
                 </a>
-                <a href="#" class="list-group-item">
+                <a href="{{ route('admin.settings.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-cogs"></i>Pengaturan
                 </a>
                 <form action="{{ route('logout') }}" method="POST">
@@ -135,7 +158,6 @@
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-light">
                 <div class="container-fluid">
-                    {{-- Tombol toggle sidebar untuk tampilan mobile --}}
                     <button class="btn btn-outline-secondary d-md-none" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -160,7 +182,6 @@
             </nav>
 
             <div class="container-fluid p-4">
-                {{-- Lokasi konten utama dari halaman yang diperluas --}}
                 @yield('content')
             </div>
         </div>
@@ -169,7 +190,9 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    @stack('scripts') {{-- PENTING: PASTIKAN BARIS INI ADA --}}
+    {{-- PASTIKAN @stack('scripts') ADA DI SINI, SEBELUM PENUTUP </body> --}}
+    @stack('scripts')
+    {{-- Memindahkan script umum ke sini agar dieksekusi --}}
     <script>
         // Script untuk toggle sidebar (untuk tampilan mobile)
         var sidebarToggle = document.getElementById('sidebarToggle');
@@ -184,11 +207,12 @@
             const currentPath = window.location.pathname;
             document.querySelectorAll('#sidebar .list-group-item').forEach(item => {
                 const linkHref = item.getAttribute('href');
-                if (linkHref && currentPath.startsWith(linkHref) && linkHref !== '#') {
-                    // Cek jika link adalah root, hanya aktif jika path persis
+                if (linkHref) { // Memastikan href ada
+                    // Perlu penanganan khusus jika linkHref adalah root '/' atau dashboard
+                    // agar tidak semua link aktif jika hanya path '/'
                     if (linkHref === '{{ route('admin.dashboard') }}' && currentPath === '{{ route('admin.dashboard') }}') {
                         item.classList.add('active');
-                    } else if (linkHref !== '{{ route('admin.dashboard') }}') {
+                    } else if (linkHref !== '#' && currentPath.startsWith(linkHref)) { // Menghindari link '#'
                         item.classList.add('active');
                     }
                 }

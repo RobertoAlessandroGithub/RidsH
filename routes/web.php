@@ -8,6 +8,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AdminController; // Pastikan ini diimpor jika Anda menggunakan AdminController@dashboard
 
 /*
@@ -60,6 +61,21 @@ Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('adm
 // - Form Tambah: http://localhost:8000/menu/create
 // - Submit Tambah: POST ke http://localhost:8000/menu
 Route::resource('menu', MenuController::class);
+// Route kustom untuk mengubah status aktif/nonaktif menu
+// URL: POST /menu/{menu}/toggle-status
+Route::post('/menu/{menu}/toggle-status', [App\Http\Controllers\MenuController::class, 'toggleActiveStatus'])->name('menu.toggle-status');
+
+// Laporan Admin
+Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+    Route::get('/', [App\Http\Controllers\ReportController::class, 'index'])->name('index');
+    Route::get('/daily-sales', [App\Http\Controllers\ReportController::class, 'dailySales'])->name('daily-sales');
+});
+
+// Pengaturan Admin
+Route::prefix('admin/settings')->name('admin.settings.')->group(function () {
+    Route::get('/', [App\Http\Controllers\SettingController::class, 'index'])->name('index');
+    Route::put('/', [App\Http\Controllers\SettingController::class, 'update'])->name('update');
+});
 
 // Route khusus untuk tampilan delete menu (jika ada tampilan terpisah)
 // Akses URL: http://localhost:8000/admin/menu/delete-view
@@ -74,7 +90,7 @@ Route::resource('orders', OrderController::class);
 // ======================================================================
 // AKHIR DARI ROUTE ADMIN SEMENTARA PUBLIK
 // ======================================================================
-
+Route::resource('categories', CategoryController::class);
 
 // ==========================
 // Dashboard untuk user login biasa (dilindungi middleware 'auth' dan 'verified')
@@ -98,6 +114,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('admin.menu.create'); // Ini mengarah ke resources/views/dashboard.blade.php
     })->name('create');
 
+
 // ==========================
 // General Public Routes (bisa diakses tanpa login)
 // ==========================
@@ -112,11 +129,12 @@ Route::get('/kamar-deluxe', function () {
     return view('customer.rooms.kamar-deluxe');
 })->name('rooms.deluxe');
 
+
 // ==========================
 // Maminko Menu & Checkout (Customer-facing)
 // ==========================
 
-// Route utama untuk halaman Maminko (menu customer)
+// Route utama untuk halaman Maminko (menu customer)s
 // Akses URL: http://localhost:8000/maminko
 Route::get('/maminko', [MenuController::class, 'maminkoIndex'])->name('maminko.index');
 
@@ -135,9 +153,18 @@ Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
 // Route untuk menghapus item dari keranjang
 Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
 
+Route::get('/checkout', function () {
+    return view('customer.maminko.checkout');
+})->name('checkout.index');
+
+Route::get('/order/success', function () {
+    return view('customer.maminko.success');
+})->name('order.success');
+
 // Route untuk memproses pesanan dari halaman checkout (POST)
 Route::post('/order/store', [OrderController::class, 'store'])->name('order.store');
 
+Route::get('/menu-detail/{slug}', [MenuController::class, 'showDetail'])->name('menu.detail');
 
 // ==========================
 // Route Otomatis dari Laravel Breeze / Jetstream (jika digunakan)

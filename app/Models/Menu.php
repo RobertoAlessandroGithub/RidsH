@@ -1,33 +1,29 @@
 <?php
 
-namespace App\Models;
+    namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
+    use Illuminate\Database\Eloquent\Model;
+    use App\Models\Category; // Pastikan ini di-import
 
-class Menu extends Model
-{
-    use HasFactory;
+    class Menu extends Model
+    {
+        use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'description',
-        'price',
-        'image', // Jika hanya menyimpan satu gambar sebagai string path
-        // 'images', // Jika Anda punya kolom 'images' untuk menyimpan array JSON dari path gambar
-        // 'category_id', // Jika Anda punya kolom untuk kategori
-        'category', // Tambahkan jika ada kolom ini di DB
-        // 'average_rating',
-        // 'total_ratings',
-        // 'reviews',
-        // 'nutritional_info',
-    ];
+        protected $fillable = [
+            'name',
+            'slug',
+            'category_id', // Pastikan ini ada di fillable
+            'description',
+            'detailed_description', // Pastikan ini juga ada jika Anda menggunakannya
+            'price',
+            'image',
+            'is_active',
+        ];
 
-    // PENTING: Jika Anda menyimpan array gambar, reviews, dll. sebagai JSON di database,
-    // Anda perlu menambahkan casting ini.
-    protected $casts = [
-        'images' => 'array', // Jika kolom 'images' menyimpan JSON array of image paths
-        'reviews' => 'array', // Jika kolom 'reviews' menyimpan JSON array of review objects
-        // 'nutritional_info' => 'array', // Jika ini juga JSON
-    ];
-}
+        // Definisikan relasi 'belongsTo' ke model Category
+        public function category()
+        {
+            return $this->belongsTo(Category::class);
+        }
+    }
