@@ -39,7 +39,7 @@ class MenuController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:menus,name',
-            'category_id' => 'required|exists:categories,id', // Validasi category_id
+             'category_id' => 'nullable|in:Makanan Berat,Makanan Ringan,Minuman Berat,Minuman Ringan',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB

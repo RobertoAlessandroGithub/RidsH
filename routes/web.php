@@ -136,11 +136,14 @@ Route::get('/kamar-deluxe', function () {
 
 // Route utama untuk halaman Maminko (menu customer)s
 // Akses URL: http://localhost:8000/maminko
-Route::get('/maminko', [MenuController::class, 'maminkoIndex'])->name('maminko.index');
 
+Route::get('/maminko', [MenuController::class, 'maminkoIndex'])->name('maminko.index');
+// Custom detail route pakai slug
+Route::get('/menu/{slug}', [MenuController::class, 'showDetail'])->name('menu.detail');
+
+// Baru resource route tanpa show
+Route::resource('menu', MenuController::class)->except(['show']);
 // Route untuk menampilkan detail satu menu (customer)
-// Akses URL: http://localhost:8000/menu/{nama-menu-anda} (misal: /menu/Pizza%20Margherita%20Classic)
-Route::get('/menu/{name}', [MenuController::class, 'showDetail'])->name('menu.detail');
 
 // Route untuk menampilkan halaman checkout (GET)
 // Akses URL: http://localhost:8000/checkout
@@ -164,7 +167,7 @@ Route::get('/order/success', function () {
 // Route untuk memproses pesanan dari halaman checkout (POST)
 Route::post('/order/store', [OrderController::class, 'store'])->name('order.store');
 
-Route::get('/menu-detail/{slug}', [MenuController::class, 'showDetail'])->name('menu.detail');
+
 
 // ==========================
 // Route Otomatis dari Laravel Breeze / Jetstream (jika digunakan)

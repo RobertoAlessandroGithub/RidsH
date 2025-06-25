@@ -102,11 +102,15 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Kategori (Opsional):</label>
-                                <input type="text" class="form-control" id="category" name="category" value="{{ old('category') }}" placeholder="Contoh: Makanan Berat">
-                                <small class="text-muted">Jika ada kategori untuk pengelompokan.</small>
-                            </div>
+                                 <select class="form-select" id="category_id" name="category_id">
+                        <option value="">Pilih kategori</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
 
                             <div class="mb-3">
                                 <label for="image" class="form-label">Gambar Item:</label>

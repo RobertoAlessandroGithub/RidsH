@@ -1,33 +1,34 @@
-    <?php
+<?php
 
-    use Illuminate\Database\Migrations\Migration;
-    use Illuminate\Database\Schema\Blueprint;
-    use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-    return new class extends Migration
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        /**
-         * Run the migrations.
-         */
-        public function up(): void
-        {
-            Schema::create('order_items', function (Blueprint $table) {
-                $table->id();
-                // Foreign key ke tabel 'orders'
-                $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-                // Foreign key ke tabel 'menus'
-                $table->foreignId('menu_id')->constrained('menus')->onDelete('cascade');
-                $table->integer('quantity'); // Jumlah item menu yang dipesan
-                $table->decimal('price', 10, 2); // Harga menu saat dipesan (penting untuk histori)
-                $table->timestamps();
-            });
-        }
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('customer_name'); // nama customer
+            $table->string('customer_phone')->nullable(); // nomor telepon, boleh kosong
+            $table->decimal('total_amount', 10, 2)->default(0); // total harga
+            $table->string('status')->default('pending'); // status order
+            $table->string('table_number')->nullable();
+            $table->text('notes')->nullable()->after('table_number');
+            $table->string('payment_method')->nullable()->after('status');
+            $table->timestamps(); // created_at dan updated_at
+        });
+    }
 
-        /**
-         * Reverse the migrations.
-         */
-        public function down(): void
-        {
-            Schema::dropIfExists('order_items');
-        }
-    };
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('orders');
+    }
+};

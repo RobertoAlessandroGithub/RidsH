@@ -18,6 +18,8 @@ return new class extends Migration
             $table->text('description');
             $table->decimal('price', 10, 2);
             $table->string('image')->nullable();
+            $table->string('slug');
+            $table->unsignedBigInteger('category_id')->nullable();
             // Kolom-kolom 'category' dan 'is_active' ditambahkan di migrasi terpisah
             $table->timestamps();
         });
