@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terima Kasih!</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(to right bottom, #fde68a, #f97316); /* Gradien kuning-oranye */
+            background: linear-gradient(to right bottom, #fde68a, #f97316);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -30,7 +31,7 @@
         }
         .success-icon {
             font-size: 4rem;
-            color: #22c55e; /* Green for success */
+            color: #22c55e;
             margin-bottom: 20px;
         }
         h1 {
@@ -47,7 +48,7 @@
             background-color: #f97316;
             color: white;
             padding: 12px 25px;
-            border-radius: 9999px; /* Full rounded */
+            border-radius: 9999px;
             font-weight: bold;
             display: inline-block;
             transition: background-color 0.3s ease;
@@ -61,7 +62,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
-    <!-- Font Awesome for check icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -73,5 +73,10 @@
         <p>Terima kasih telah memesan di MaMinKo. Pesanan Anda sedang diproses. Silakan tunggu di meja Anda.</p>
         <a href="/maminko" class="back-button">Kembali ke Menu</a>
     </div>
+
+    <script>
+        // Hapus cart dari localStorage setelah checkout berhasil
+        localStorage.removeItem('cart');
+    </script>
 </body>
 </html>

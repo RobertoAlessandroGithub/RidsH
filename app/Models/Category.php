@@ -9,10 +9,8 @@
     {
         use HasFactory;
 
-        protected $fillable = [
-            'name',
-            'slug', // Slug biasanya digunakan untuk URL yang rapi
-        ];
+        protected $fillable = ['name', 'slug', 'type'];
+
 
         /**
          * Get the menus for the category.

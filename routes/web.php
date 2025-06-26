@@ -136,7 +136,6 @@ Route::get('/kamar-deluxe', function () {
 
 // Route utama untuk halaman Maminko (menu customer)s
 // Akses URL: http://localhost:8000/maminko
-
 Route::get('/maminko', [MenuController::class, 'maminkoIndex'])->name('maminko.index');
 // Custom detail route pakai slug
 Route::get('/menu/{slug}', [MenuController::class, 'showDetail'])->name('menu.detail');
@@ -146,7 +145,6 @@ Route::resource('menu', MenuController::class)->except(['show']);
 // Route untuk menampilkan detail satu menu (customer)
 
 // Route untuk menampilkan halaman checkout (GET)
-// Akses URL: http://localhost:8000/checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
 // Route untuk menambahkan item ke keranjang
@@ -160,13 +158,19 @@ Route::get('/checkout', function () {
     return view('customer.maminko.checkout');
 })->name('checkout.index');
 
-Route::get('/order/success', function () {
+
+//Ketika sukses checkout
+Route::get('/checkout/success', function () {
     return view('customer.maminko.success');
-})->name('order.success');
+})->name('checkout.success');
+
+// Route::get('/order/success', function () {
+//     return view('customer.maminko.success');
+// })->name('order.success');
 
 // Route untuk memproses pesanan dari halaman checkout (POST)
 Route::post('/order/store', [OrderController::class, 'store'])->name('order.store');
-
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
 
 // ==========================

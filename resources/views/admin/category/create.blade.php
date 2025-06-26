@@ -42,9 +42,18 @@
                             <form action="{{ route('categories.store') }}" method="POST">
                                 @csrf
 
-                                <div class="mb-3">
-                                    <label for="name" class="form-label">Nama Kategori:</label>
-                                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Contoh: Makanan Berat" required>
+                            <div class="mb-3">
+                            <label for="name" class="form-label">Nama Kategori:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Contoh: Makanan Berat" required>
+                        </div>
+
+                               <div class="mb-3">
+                                    <label for="type" class="form-label">Jenis Kategori:</label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">-- Pilih Jenis --</option>
+                                        <option value="Makanan" {{ old('type') == 'Makanan' ? 'selected' : '' }}>Makanan</option>
+                                        <option value="Minuman" {{ old('type') == 'Minuman' ? 'selected' : '' }}>Minuman</option>
+                                    </select>
                                 </div>
 
                                 <div class="d-grid gap-2 mt-4">

@@ -158,11 +158,10 @@
         </div>
 
         <div class="text-center mb-6">
-            <button class="category-button active" onclick="filterCategory('all', this)">All Products</button>
-            {{-- Kategori dinamis dari database --}}
-            @foreach($categories as $category)
-                <button class="category-button" onclick="filterCategory('{{ $category->slug }}', this)">{{ $category->name }}</button>
-            @endforeach
+            <button class="category-button active" data-category="all" onclick="filterCategory('all', this)">All Products</button>
+@foreach($categories as $category)
+    <button class="category-button" data-category="{{ $category->slug }}" onclick="filterCategory('{{ $category->slug }}', this)">{{ $category->name }}</button>
+@endforeach
         </div>
 
         <div class="menu-container px-6 max-w-7xl mx-auto" id="menuList">
@@ -226,7 +225,7 @@
 
         <script>
             AOS.init();
-
+            
             let cart = {}; // Objek keranjang global
 
             // Fungsi helper untuk format Rupiah
@@ -278,45 +277,54 @@
                 renderCart(); // Render keranjang saat halaman dimuat
             });
 
-            function addToCart(name, price, image) {
-                // Perbaikan Animasi "Fly to Cart"
-                const flyImg = document.createElement('img');
-                flyImg.src = image; // Gunakan gambar menu
-                flyImg.className = 'fly-animation'; // Kelas CSS untuk animasi dan styling
-                document.body.appendChild(flyImg);
+            function addToCart(name, price, image, event) {
+    // Pastikan event tidak bubbling
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
-                // Posisi awal animasi
-                const startX = event.clientX;
-                const startY = event.clientY;
-                flyImg.style.left = startX + 'px';
-                flyImg.style.top = startY + 'px';
+    // Periksa apakah ini double click
+    if (this.clicked) return;
+    this.clicked = true;
+    
+    // Animasi fly to cart
+    const flyImg = document.createElement('img');
+    flyImg.src = image;
+    flyImg.className = 'fly-animation';
+    document.body.appendChild(flyImg);
 
-                // Dapatkan posisi target tombol keranjang
-                const targetButton = document.querySelector('.fixed.bottom-24.right-4');
-                const targetRect = targetButton.getBoundingClientRect();
-                const targetX = targetRect.left + (targetRect.width / 2) - (flyImg.offsetWidth / 2); // Pusat tombol
-                const targetY = targetRect.top + (targetRect.height / 2) - (flyImg.offsetHeight / 2); // Pusat tombol
+    // Posisi animasi
+    const startX = event ? event.clientX : 0;
+    const startY = event ? event.clientY : 0;
+    flyImg.style.left = startX + 'px';
+    flyImg.style.top = startY + 'px';
 
-                // Set custom CSS properties untuk animasi
-                flyImg.style.setProperty('--start-x', `${startX}px`);
-                flyImg.style.setProperty('--start-y', `${startY}px`);
-                flyImg.style.setProperty('--target-x', `${targetX}px`);
-                flyImg.style.setProperty('--target-y', `${targetY}px`);
+    const targetButton = document.querySelector('.fixed.bottom-24.right-4');
+    const targetRect = targetButton.getBoundingClientRect();
+    const targetX = targetRect.left + (targetRect.width / 2);
+    const targetY = targetRect.top + (targetRect.height / 2);
 
-                // Tambahkan item ke keranjang
-                if (!cart[name]) {
-                    cart[name] = { qty: 1, price: parseInt(price), image: image };
-                } else {
-                    cart[name].qty += 1;
-                }
-                localStorage.setItem('cart', JSON.stringify(cart)); // Simpan ke localStorage
+    flyImg.style.setProperty('--start-x', `${startX}px`);
+    flyImg.style.setProperty('--start-y', `${startY}px`);
+    flyImg.style.setProperty('--target-x', `${targetX}px`);
+    flyImg.style.setProperty('--target-y', `${targetY}px`);
 
-                // Hapus animasi setelah selesai
-                setTimeout(() => {
-                    flyImg.remove();
-                    showNotification(`Berhasil menambahkan ${name} ke keranjang!`, 'success');
-                }, 800); // Sesuaikan dengan durasi animasi
-            }
+    // Tambahkan ke keranjang (hanya 1x)
+    if (!cart[name]) {
+        cart[name] = { qty: 1, price: parseInt(price), image: image };
+    } else {
+        cart[name].qty += 1;
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    setTimeout(() => {
+        flyImg.remove();
+        showNotification(`Berhasil menambahkan ${name} ke keranjang!`, 'success');
+        renderCart();
+        this.clicked = false; // Reset flag
+    }, 800);
+}
 
 
             // Merender isi keranjang di sidebar popup
@@ -405,26 +413,32 @@
             }
 
             // Pencarian menu
-            document.getElementById('searchInput').addEventListener('input', function () {
-                const keyword = this.value.toLowerCase();
-                const cards = document.querySelectorAll('.menu-card');
-                const activeCategory = document.querySelector('.category-button.active').dataset.category; // Ambil kategori yang aktif
+           document.getElementById('searchInput').addEventListener('input', function () {
+    const keyword = this.value.toLowerCase();
+    const cards = document.querySelectorAll('.menu-card');
+    const activeCategory = document.querySelector('.category-button.active')?.dataset.category || 'all';
 
-                cards.forEach(card => {
-                    const name = card.querySelector('h3').innerText.toLowerCase();
-                    const desc = card.querySelector('p').innerText.toLowerCase();
-                    const cardCategory = card.dataset.category;
+    cards.forEach(card => {
+        const name = card.querySelector('h3').innerText.toLowerCase();
+        const descElements = card.querySelectorAll('.menu-info p');
+        let desc = "";
+        descElements.forEach(p => {
+            desc += p.innerText.toLowerCase() + " ";
+        });
+        const cardCategory = card.dataset.category;
 
-                    const matchesSearch = name.includes(keyword) || desc.includes(keyword);
-                    const matchesCategory = (activeCategory === 'all' || cardCategory === activeCategory);
+        const matchesSearch = name.includes(keyword) || desc.includes(keyword);
+        const matchesCategory = (activeCategory === 'all' || cardCategory === activeCategory);
 
-                    if (matchesSearch && matchesCategory) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
+        if (matchesSearch && matchesCategory) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+
         </script>
 
         <footer class="bg-gray-900 text-white text-sm mt-10">

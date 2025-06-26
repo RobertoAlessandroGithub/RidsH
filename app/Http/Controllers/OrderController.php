@@ -1,108 +1,111 @@
 <?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Models\Order;
-    use App\Models\OrderItem;
-    use App\Models\Menu;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\DB;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Menu;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-    class OrderController extends Controller
+class OrderController extends Controller
+{
+    /**
+     * Display a listing of the orders.
+     */
+    public function index()
     {
-        /**
-         * Display a listing of the orders.
-         */
-        public function index()
-        {
-            $orders = Order::orderBy('created_at', 'desc')->get();
-            return view('admin.order.index', compact('orders'));
-        }
+        $orders = Order::orderBy('created_at', 'desc')->get();
+        return view('admin.order.index', compact('orders'));
+    }
 
-        /**
-         * Store a newly created order in storage.
-         */
-        public function store(Request $request)
-        {
-            // Validasi data yang masuk
-            $validatedData = $request->validate([
-                'customer_name' => 'required|string|max:255', // Nama sekarang required
-                'customer_phone' => 'nullable|string|max:20', // Tambahkan validasi untuk nomor telepon
-                'table_number' => 'nullable|string|max:255',
-                'notes' => 'nullable|string|max:1000',
-                'total_amount' => 'required|numeric|min:0',
-                'order_items' => 'required|array',
-                'order_items.*.menu_name' => 'required|string|max:255',
-                'order_items.*.quantity' => 'required|integer|min:1',
-                'order_items.*.price_at_order' => 'required|numeric|min:0',
-                'payment_method' => 'required|string|in:cash,qr', // Tambahkan validasi metode pembayaran
+    /**
+     * Store a newly created order in storage.
+     */
+    public function store(Request $request)
+    {
+        // Validasi data dari form submit
+        $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'table_number' => 'required|string|max:255',
+            'order_notes' => 'nullable|string|max:1000',
+            'payment_method' => 'required|string|in:cash,qr',
+            'cart_data' => 'required|json',
+            'final_total' => 'required|numeric|min:0'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Simpan order utama
+            $order = Order::create([
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone,
+                'table_number' => $request->table_number,
+                'notes' => $request->order_notes,
+                'payment_method' => $request->payment_method,
+                'total_amount' => $request->final_total,
+                'status' => 'pending',
             ]);
 
-            DB::beginTransaction();
+            // Decode cart data
+            $cart = json_decode($request->cart_data, true);
 
-            try {
-                // Buat pesanan utama
-                $order = Order::create([
-                    'customer_name' => $validatedData['customer_name'],
-                    'customer_phone' => $validatedData['customer_phone'], // Simpan nomor telepon
-                    'table_number' => $validatedData['table_number'],
-                    'total_amount' => $validatedData['total_amount'],
-                    'notes' => $validatedData['notes'],
-                    'status' => 'pending',
-                    'payment_method' => $validatedData['payment_method'], // Simpan metode pembayaran
-                ]);
+            // Simpan item-item pesanan
+            foreach ($cart as $name => $item) {
+                $menu = Menu::where('name', $name)->first();
 
-                // Simpan setiap item pesanan
-                foreach ($validatedData['order_items'] as $itemData) {
-                    $menu = Menu::where('name', $itemData['menu_name'])->first();
-
-                    if (!$menu) {
-                        DB::rollBack();
-                        return response()->json(['message' => 'Menu "' . $itemData['menu_name'] . '" tidak ditemukan.'], 404);
-                    }
-
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'menu_id' => $menu->id,
-                        'quantity' => $itemData['quantity'],
-                        'price' => $itemData['price_at_order'],
-                    ]);
+                if (!$menu) {
+                    DB::rollBack();
+                    return back()->with('error', "Menu '$name' tidak ditemukan.");
                 }
 
-                DB::commit();
-
-                return response()->json(['message' => 'Pesanan berhasil dibuat dan disimpan!'], 201);
-
-            } catch (\Illuminate\Validation\ValidationException $e) {
-                DB::rollBack();
-                return response()->json(['errors' => $e->errors()], 422);
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json(['message' => 'Gagal membuat pesanan: ' . $e->getMessage()], 500);
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_id' => $menu->id,
+                    'quantity' => $item['qty'],
+                    'price' => $item['price'],
+                ]);
             }
-        }
 
-        /**
-         * Display the specified order.
-         */
-        public function show(Order $order)
-        {
-            $order->load('items.menu');
+            DB::commit();
 
-            return view('admin.order.show', compact('order'));
-        }
+            return redirect()->route('checkout.success');
+             return redirect()->route('order.show', ['order' => $order->id]);
 
-        /**
-         * Update the specified order in storage. (Untuk mengubah status pesanan)
-         */
-        public function update(Request $request, Order $order)
-        {
-            $validatedData = $request->validate([
-                'status' => 'required|string|in:pending,preparing,ready,completed,cancelled',
-            ]);
-
-            $order->update($validatedData);
-
-            return back()->with('success', 'Status pesanan berhasil diperbarui!');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Pesanan gagal: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Pesanan gagal: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Display the specified order.
+     */
+    public function show(Order $order)
+    {
+        $order->load('items.menu');
+        return view('admin.order.show', compact('order'));
+
+     $order->load('items.menu'); // Memuat item untuk pesanan tunggal ini
+    return view('receipt', compact('order')); // Lalu, melewatkannya sebagai $order
+    }
+
+    /**
+     * Update the specified order in storage.
+     */
+    public function update(Request $request, Order $order)
+    {
+        $validatedData = $request->validate([
+            'status' => 'required|string|in:pending,preparing,ready,completed,cancelled',
+        ]);
+
+        $order->update($validatedData);
+
+        return back()->with('success', 'Status pesanan berhasil diperbarui!');
+    }
+}

@@ -28,18 +28,21 @@
         /**
          * Store a newly created category in storage.
          */
-        public function store(Request $request)
-        {
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255|unique:categories,name',
-            ]);
+       public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'type' => 'required|string'
+    ]);
 
-            $validatedData['slug'] = Str::slug($validatedData['name']);
+    Category::create([
+        'name' => $request->name,
+        'slug' => Str::slug($request->name),
+        'type' => $request->type
+    ]);
 
-            Category::create($validatedData);
-
-            return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
-        }
+    return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
+}
 
         /**
          * Show the form for editing the specified category.
