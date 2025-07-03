@@ -42,7 +42,13 @@
                         <h5 class="card-title font-weight-bold mb-2">{{ $menu->name }}</h5>
                         <p class="card-text text-gray-600 mb-2 truncate-text">{{ $menu->description }}</p>
                         <p class="text-primary font-weight-bold mb-2">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                        <p class="text-sm text-gray-500 mb-1">Kategori: <span class="menu-category-display">{{ $menu->category ?? 'Belum Ada' }}</span></p>
+                        <p class="text-sm text-gray-500 mb-1">
+                            Kategori:
+                            <span class="menu-category-display fw-bold">
+                                {{-- Mengakses properti 'name' dari relasi 'category' --}}
+                                {{ $menu->category->name ?? 'Belum Ada' }}
+                            </span>
+                        </p>
                         <p class="text-sm text-gray-500">Dibuat: {{ $menu->created_at->format('d M Y') }}</p>
                         <p class="text-sm">Status:
                             <span class="badge rounded-pill px-2 py-1 {{ $menu->is_active ? 'bg-success' : 'bg-secondary' }}">
@@ -50,6 +56,7 @@
                             </span>
                         </p>
                     </div>
+
 
                     {{-- Tombol Aksi Admin --}}
                     <div class="card-footer bg-white border-top-0 d-flex justify-content-around p-3">
@@ -102,6 +109,9 @@
             </div>
         </div>
     </div>
+    <div class="d-flex justify-content-center mt-4">
+                        {{ $menus->links() }}
+                    </div>
 @endsection
 
 @push('scripts')

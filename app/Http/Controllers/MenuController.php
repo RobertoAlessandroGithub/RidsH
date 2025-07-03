@@ -3,14 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
-use App\Models\Category; // Import model Category
-use App\Models\Order; // Import Order model
-use App\Models\OrderItem; // Import OrderItem model
+use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str; // Untuk slug
-use Illuminate\Support\Facades\Storage; // Untuk menghapus gambar
-use Illuminate\Validation\ValidationException; // Untuk error validasi
-use Illuminate\Support\Facades\DB; // Untuk transaksi database
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
@@ -19,7 +15,8 @@ class MenuController extends Controller
      */
     public function index()
     {
-        $menus = Menu::with('category')->orderBy('created_at', 'desc')->get();
+        // Eager load relasi 'category' untuk menghindari N+1 query problem
+        $menus = Menu::with('category')->latest()->paginate(12); // Menggunakan paginate untuk performa
         return view('admin.menu.index', compact('menus'));
     }
 
@@ -28,7 +25,7 @@ class MenuController extends Controller
      */
     public function create()
     {
-        $categories = Category::all(); // Ambil semua kategori
+        $categories = Category::orderBy('name')->get(); // Ambil semua kategori
         return view('admin.menu.create', compact('categories'));
     }
 
@@ -37,12 +34,16 @@ class MenuController extends Controller
      */
     public function store(Request $request)
     {
+        // ===================================================
+        // PERBAIKAN DI SINI
+        // ===================================================
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:menus,name',
-             'category_id' => 'nullable|in:Makanan Berat,Makanan Ringan,Minuman Berat,Minuman Ringan',
+            // Validasi sekarang memeriksa apakah ID kategori ada di tabel 'categories'
+            'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $imagePath = null;
@@ -52,12 +53,12 @@ class MenuController extends Controller
 
         Menu::create([
             'name' => $validatedData['name'],
-            'slug' => Str::slug($validatedData['name']), // Generate slug from name
+            'slug' => Str::slug($validatedData['name']),
             'category_id' => $validatedData['category_id'],
             'description' => $validatedData['description'],
             'price' => $validatedData['price'],
             'image' => $imagePath,
-            'is_active' => true, // Default to active
+            'is_active' => true,
         ]);
 
         return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan!');
@@ -68,8 +69,6 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
-        // This 'show' is for admin panel to see menu details,
-        // it's different from the public 'showDetail' method.
         return view('admin.menu.show', compact('menu'));
     }
 
@@ -78,7 +77,7 @@ class MenuController extends Controller
      */
     public function edit(Menu $menu)
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
         return view('admin.menu.edit', compact('menu', 'categories'));
     }
 
@@ -92,12 +91,11 @@ class MenuController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $imagePath = $menu->image;
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
             if ($imagePath) {
                 Storage::disk('public')->delete($imagePath);
             }
@@ -111,7 +109,6 @@ class MenuController extends Controller
             'description' => $validatedData['description'],
             'price' => $validatedData['price'],
             'image' => $imagePath,
-            // 'is_active' tidak diupdate di sini, diupdate di toggleActiveStatus
         ]);
 
         return redirect()->route('menu.index')->with('success', 'Menu berhasil diperbarui!');
@@ -139,19 +136,12 @@ class MenuController extends Controller
         return back()->with('success', 'Status menu berhasil diperbarui!');
     }
 
+    // ... (Fungsi untuk tampilan pelanggan lainnya) ...
 
-    // =======================================================================
-    // FUNGSI UNTUK TAMPILAN PELANGGAN (MaMinKo)
-    // =======================================================================
-
-    /**
-     * Display a listing of the menus for the customer (MaMinKo page).
-     */
     public function maminkoIndex(Request $request)
     {
         $query = Menu::where('is_active', true);
 
-        // Filter berdasarkan kategori
         if ($request->has('category') && $request->category != 'all') {
             $categorySlug = $request->category;
             $category = Category::where('slug', $categorySlug)->first();
@@ -160,25 +150,20 @@ class MenuController extends Controller
             }
         }
 
-        // Filter berdasarkan pencarian nama menu
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where('name', 'like', '%' . $search . '%');
         }
 
         $menus = $query->with('category')->orderBy('name')->get();
-        $categories = Category::orderBy('name')->get(); // Ambil semua kategori untuk filter
+        $categories = Category::orderBy('name')->get();
 
         return view('customer.maminko.maminko', compact('menus', 'categories'));
     }
 
-
-    /**
-     * Display the specified menu details for the customer.
-     */
     public function showDetail($slug)
-{
-    $menu = Menu::where('slug', $slug)->where('is_active', true)->firstOrFail();
-    return view('customer.maminko.menu-detail', compact('menu'));
-}
+    {
+        $menu = Menu::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        return view('customer.maminko.menu-detail', compact('menu'));
+    }
 }

@@ -80,7 +80,14 @@
 
                             <div class="mb-3">
                                 <label for="category" class="form-label">Kategori (Opsional):</label>
-                                <input type="text" class="form-control" id="category" name="category" value="{{ old('category', $menu->category ?? '') }}" placeholder="Contoh: Makanan Berat">
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" {{ old('category_id', $menu->category_id) == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                             </div>
 
                             <div class="d-grid gap-2">

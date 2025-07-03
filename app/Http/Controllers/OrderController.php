@@ -13,9 +13,38 @@ class OrderController extends Controller
     /**
      * Display a listing of the orders.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::orderBy('created_at', 'desc')->get();
+        // ===================================================
+        // PERBAIKAN DI SINI: Menambahkan logic filter & search
+        // ===================================================
+        $query = Order::with('items.menu')->latest();
+
+        // Filter berdasarkan Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Pencarian berdasarkan Nama, ID, atau Kode Pesanan
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('customer_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('order_code', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('id', $searchTerm);
+            });
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+
+        // Terapkan Pagination
+        $orders = $query->paginate(15)->withQueryString(); // withQueryString() agar filter tetap ada saat pindah halaman
+
         return view('admin.order.index', compact('orders'));
     }
 
@@ -24,7 +53,6 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi data dari form submit
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
@@ -36,9 +64,7 @@ class OrderController extends Controller
         ]);
 
         DB::beginTransaction();
-
         try {
-            // Simpan order utama
             $order = Order::create([
                 'customer_name' => $request->customer_name,
                 'customer_phone' => $request->customer_phone,
@@ -49,18 +75,9 @@ class OrderController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Decode cart data
             $cart = json_decode($request->cart_data, true);
-
-            // Simpan item-item pesanan
             foreach ($cart as $name => $item) {
-                $menu = Menu::where('name', $name)->first();
-
-                if (!$menu) {
-                    DB::rollBack();
-                    return back()->with('error', "Menu '$name' tidak ditemukan.");
-                }
-
+                $menu = Menu::where('name', $name)->firstOrFail();
                 OrderItem::create([
                     'order_id' => $order->id,
                     'menu_id' => $menu->id,
@@ -68,44 +85,26 @@ class OrderController extends Controller
                     'price' => $item['price'],
                 ]);
             }
-
             DB::commit();
-
             return redirect()->route('checkout.success');
-             return redirect()->route('order.show', ['order' => $order->id]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'Pesanan gagal: ' . $e->getMessage());
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Pesanan gagal: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Display the specified order.
-     */
     public function show(Order $order)
     {
         $order->load('items.menu');
         return view('admin.order.show', compact('order'));
-
-     $order->load('items.menu'); // Memuat item untuk pesanan tunggal ini
-    return view('receipt', compact('order')); // Lalu, melewatkannya sebagai $order
     }
 
-    /**
-     * Update the specified order in storage.
-     */
     public function update(Request $request, Order $order)
     {
-        $validatedData = $request->validate([
-            'status' => 'required|string|in:pending,preparing,ready,completed,cancelled',
-        ]);
-
-        $order->update($validatedData);
-
+        // Sebaiknya gunakan fungsi terpisah untuk update status
+        // agar tidak bentrok dengan route 'update' standar dari resource
+        $request->validate(['status' => 'required|string|in:pending,preparing,ready,completed,cancelled']);
+        $order->update(['status' => $request->status]);
         return back()->with('success', 'Status pesanan berhasil diperbarui!');
     }
 }
