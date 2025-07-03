@@ -92,7 +92,7 @@
                                 <td class="text-center align-middle">
                                     <div class="d-flex justify-content-center">
                                         <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-secondary" title="Lihat Detail">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye"></i> Detail
                                         </a>
                                         {{-- Sebaiknya gunakan route terpisah untuk update status jika ada, misal 'orders.updateStatus' --}}
                                         {{-- Untuk sementara, ini akan mengarah ke route 'update' standar --}}
