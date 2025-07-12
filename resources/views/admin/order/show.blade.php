@@ -59,7 +59,7 @@
                 {{-- Bagian ini akan menampilkan item-item dalam pesanan --}}
                 {{-- Anda perlu memastikan model Order memiliki relasi 'items' ke 'OrderItem' --}}
                 {{-- Dan tabel order_items memiliki kolom yang sesuai (order_id, menu_id, quantity, price) --}}
-                {{-- @if($order->items->count() > 0)
+                @if($order->items->count() > 0)
                 <h6 class="mt-4 mb-3 font-weight-bold">Item Pesanan:</h6>
                 <ul class="list-group">
                     @foreach($order->items as $item)
@@ -71,7 +71,7 @@
                 </ul>
                 @else
                 <p class="text-muted mt-4">Tidak ada item dalam pesanan ini.</p>
-                @endif --}}
+                @endif
 
             </div>
         </div>
