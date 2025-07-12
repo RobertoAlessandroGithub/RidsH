@@ -52,7 +52,6 @@ Route::post('/logout', function () {
 
 // Admin Dashboard
 // Akses URL: http://localhost:8000/admin/dashboard
-Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
 // Menu CRUD (Resourceful routes untuk Admin, sekarang publik sementara)
 // Ini akan menangani semua operasi CRUD menu
@@ -106,9 +105,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard'); // Ini mengarah ke resources/views/dashboard.blade.php
-    })->name('dashboard');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'admin']);
 
     Route::get('/create', function () {
         return view('admin.menu.create'); // Ini mengarah ke resources/views/dashboard.blade.php

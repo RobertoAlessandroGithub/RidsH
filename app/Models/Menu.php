@@ -22,8 +22,8 @@
         ];
 
         // Definisikan relasi 'belongsTo' ke model Category
-        public function category()
-        {
-            return $this->belongsTo(Category::class);
-        }
+       public function category()
+{
+    return $this->belongsTo(Category::class);
+}
     }

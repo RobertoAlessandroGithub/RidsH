@@ -32,7 +32,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 font-weight-bold">Kategori:</div>
-                        <div class="col-md-8">{{ $menu->category ?? 'Belum Ada' }}</div>
+                        <div class="col-md-8">{{ $menu->category->name ?? 'Belum Ada' }}</div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 font-weight-bold">Status:</div>

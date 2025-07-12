@@ -6,19 +6,13 @@
     use Illuminate\Database\Eloquent\Model;
 
     class Category extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['name', 'slug', 'type'];
+
+    public function menus()
     {
-        use HasFactory;
-
-        protected $fillable = ['name', 'slug', 'type'];
-
-
-        /**
-         * Get the menus for the category.
-         */
-        public function menus()
-        {
-            return $this->hasMany(Menu::class, 'category', 'name'); // Jika kolom category di Menu menyimpan nama kategori
-            // Atau jika category di Menu menyimpan ID kategori:
-            // return $this->hasMany(Menu::class);
-        }
+        return $this->hasMany(Menu::class); // default: foreign key = category_id
     }
+}

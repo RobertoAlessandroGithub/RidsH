@@ -19,24 +19,28 @@ class CategoryController extends Controller
         return view('admin.category.create');
     }
 
-    public function store(Request $request)
-    {
-        // ===================================================
-        // PERBAIKAN DI SINI
-        // ===================================================
-        $request->validate([
-            // Validasi untuk 'type' dihapus
-            'name' => 'required|string|max:255|unique:categories,name',
-        ]);
+  public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255|unique:categories,name',
+    ]);
 
-        Category::create([
+    try {
+        $category = Category::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            // Penyimpanan 'type' dihapus
+            // Slug otomatis di-generate oleh model
         ]);
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
+        return redirect()
+            ->route('categories.index')
+            ->with('success', 'Kategori berhasil ditambahkan!');
+            
+    } catch (\Exception $e) {
+        return back()
+            ->withInput()
+            ->with('error', 'Gagal menyimpan: '.$e->getMessage());
     }
+}
 
     public function edit(Category $category)
     {

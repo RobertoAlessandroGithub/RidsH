@@ -69,6 +69,7 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
+         $menu->load('category');
         return view('admin.menu.show', compact('menu'));
     }
 
