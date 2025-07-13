@@ -66,12 +66,13 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'checkRole' => \App\Http\Middleware\CheckRole::class,
         'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
-        
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+
     ];
 
    protected $routeMiddleware = [
     'auth' => \App\Http\Middleware\Authenticate::class,
     'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-    'admin' => \App\Http\Middleware\AdminMiddleware::class, 
+    'admin' => \App\Http\Middleware\AdminMiddleware::class,
 ];
 }

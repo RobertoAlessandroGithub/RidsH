@@ -141,9 +141,6 @@
                 <a href="{{ route('admin.reports.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-chart-line"></i>Laporan
                 </a>
-                <a href="{{ route('admin.settings.index') }}" class="list-group-item">
-                    <i class="fas fa-fw fa-cogs"></i>Pengaturan
-                </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="list-group-item text-start w-100">

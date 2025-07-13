@@ -92,7 +92,7 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        {{-- <div class="bg-white p-6 rounded-lg shadow-md mb-6">
             <h2 class="text-xl font-semibold mb-6 text-center">Metode Pembayaran</h2>
             <div class="flex space-x-4 mb-4">
                 <div class="flex-1">
@@ -114,7 +114,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <button type="submit" id="placeOrderButton" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg text-lg">
             Pesan Sekarang (Rp 0)
