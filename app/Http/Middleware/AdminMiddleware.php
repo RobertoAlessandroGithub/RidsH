@@ -15,14 +15,16 @@ class AdminMiddleware
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function handle(Request $request, Closure $next)
+    public function handle($request, Closure $next)
     {
-        // Pastikan pengguna sudah login dan role-nya adalah 'admin'
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Anda harus login dulu.');
         }
 
-        // Jika tidak, arahkan kembali atau berikan respons 403
-        return redirect('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        if (Auth::user()->role !== 'admin') {
+            return redirect('/')->with('error', 'Anda bukan admin.');
+        }
+
+        return $next($request);
     }
 }

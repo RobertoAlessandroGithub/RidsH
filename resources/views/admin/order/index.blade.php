@@ -19,7 +19,7 @@
         {{-- PERBAIKAN DI SINI: Menambahkan Form Filter & Search --}}
         {{-- =================================================== --}}
         <div class="card-header py-3">
-            <form action="{{ route('orders.index') }}" method="GET" class="row g-2 align-items-center">
+            <form action="{{route('admin.order.index')}}" method="GET" class="row g-2 align-items-center">
                 <div class="col-md-4">
                     <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari Nama atau Kode Pesanan..." value="{{ request('search') }}">
                 </div>

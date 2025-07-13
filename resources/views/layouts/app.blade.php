@@ -27,9 +27,17 @@
                 </header>
             @endisset
 
+            <!-- Notifikasi error -->
+            <div class="max-w-7xl mx-auto mt-4 px-4 sm:px-6 lg:px-8">
+                @if (session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
+            </div>
+
             <!-- Page Content -->
             <main>
-                {{-- {{ $slot }} --}}
                 @yield('content')
             </main>
         </div>
