@@ -65,7 +65,7 @@
                     @foreach($order->items as $item)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             {{ $item->menu->name ?? 'Menu Dihapus' }} (x{{ $item->quantity }})
-                            <span class="badge bg-info rounded-pill">Rp {{ number_format($item->price, 0, ',', '.') }}</span>
+                            <span class="badge bg-info rounded-pill"> Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -77,11 +77,11 @@
         </div>
 
         <div class="d-flex justify-content-start mt-4">
-            <a href="{{ route('orders.index') }}" class="btn btn-secondary rounded-lg">
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary rounded-lg">
                 <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Pesanan
             </a>
             {{-- Tombol untuk mengubah status juga bisa di sini --}}
-            {{-- <form action="{{ route('orders.update', $order->id) }}" method="POST" class="d-inline ms-2">
+            {{-- <form action="{{ route('admin.orders.update', $order->id) }}" method="POST" class="d-inline ms-2">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="status" value="{{ $order->status == 'completed' ? 'pending' : 'completed' }}">

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -130,11 +130,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalDisplay = document.getElementById('totalDisplay');
     const placeOrderButton = document.getElementById('placeOrderButton');
     const qrisDisplay = document.getElementById('qrisDisplay');
+    // Periksa apakah elemen ini ada sebelum mencoba mengaksesnya, karena bagian QRIS dikomentari
     const paymentMethodRadios = document.querySelectorAll('input[name="payment_method_option"]');
     const paymentMethodInput = document.getElementById('paymentMethodInput');
 
     function formatRupiah(angka) {
-        return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        // Pastikan angka adalah number sebelum format
+        if (typeof angka !== 'number') {
+            angka = parseFloat(angka);
+        }
+        if (isNaN(angka)) {
+            return 'Rp 0';
+        }
+        return 'Rp ' + Math.round(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
 
     function updateQuantity(itemName, change) {
@@ -146,23 +154,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         localStorage.setItem('cart', JSON.stringify(cart));
-        renderCheckout();
+        renderCheckout(); // Panggil renderCheckout untuk memperbarui tampilan
     }
 
     function downloadQRIS() {
         const qrisImage = document.getElementById('qrisImage');
-        const imageUrl = qrisImage.src;
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.download = 'QRIS_Pembayaran_Maminko.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (qrisImage) { // Pastikan elemen ada sebelum diakses
+            const imageUrl = qrisImage.src;
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = 'QRIS_Pembayaran_Maminko.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 
-    // ===================================================
-    // FUNGSI BARU: Menambahkan event listener ke tombol
-    // ===================================================
+    // Pindahkan definisi fungsi ini ke sini agar dapat diakses oleh renderCheckout
     function addEventListenersToCartItems() {
         document.querySelectorAll('.btn-decrease').forEach(button => {
             button.addEventListener('click', function() {
@@ -181,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderCheckout() {
         let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        checkoutItems.innerHTML = '';
+        checkoutItems.innerHTML = ''; // Kosongkan dulu konten sebelum mengisi ulang
         let subtotal = 0;
 
         if (Object.keys(cart).length === 0) {
@@ -198,25 +206,24 @@ document.addEventListener('DOMContentLoaded', function() {
             subtotal += itemTotal;
             const imageUrl = item.image || 'https://via.placeholder.com/100';
 
-            // ===================================================
-            // PERBAIKAN DI SINI: Menghapus 'onclick' dan menambahkan atribut data
-            // ===================================================
-            checkoutItems.innerHTML += `
-                <div class="flex items-center justify-between py-2 border-b last:border-b-0">
-                    <div class="flex items-center">
-                        <img src="${imageUrl}" alt="${name}" class="w-16 h-16 object-cover rounded-md mr-4">
-                        <div>
-                            <p class="font-semibold">${name}</p>
-                            <p class="text-sm text-gray-600">${formatRupiah(item.price)}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2 sm:space-x-3">
-                        <button type="button" data-item-name="${name}" class="btn-decrease w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full font-bold text-xl text-gray-600 hover:bg-gray-100">-</button>
-                        <span class="font-semibold w-5 text-center">${item.qty}</span>
-                        <button type="button" data-item-name="${name}" class="btn-increase w-8 h-8 flex items-center justify-center bg-orange-500 text-white rounded-full font-bold text-xl hover:bg-orange-600">+</button>
+            // Buat elemen div untuk setiap item secara dinamis
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'flex items-center justify-between py-2 border-b last:border-b-0';
+            itemDiv.innerHTML = `
+                <div class="flex items-center">
+                    <img src="${imageUrl}" alt="${name}" class="w-16 h-16 object-cover rounded-md mr-4">
+                    <div>
+                        <p class="font-semibold">${name}</p>
+                        <p class="text-sm text-gray-600">${formatRupiah(item.price)}</p>
                     </div>
                 </div>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button type="button" data-item-name="${name}" class="btn-decrease w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full font-bold text-xl text-gray-600 hover:bg-gray-100">-</button>
+                    <span class="font-semibold w-5 text-center">${item.qty}</span>
+                    <button type="button" data-item-name="${name}" class="btn-increase w-8 h-8 flex items-center justify-center bg-orange-500 text-white rounded-full font-bold text-xl hover:bg-orange-600">+</button>
+                </div>
             `;
+            checkoutItems.appendChild(itemDiv); // Tambahkan elemen ke DOM
         });
 
         let finalTotal = subtotal;
@@ -227,24 +234,34 @@ document.addEventListener('DOMContentLoaded', function() {
         cartDataInput.value = JSON.stringify(cart);
         finalTotalInput.value = finalTotal;
 
-        const selectedPayment = document.querySelector('input[name="payment_method_option"]:checked').value;
-        paymentMethodInput.value = selectedPayment;
+        // Pastikan paymentMethodInput ada sebelum mencoba mengaksesnya
+        if (paymentMethodInput) {
+            const selectedPayment = document.querySelector('input[name="payment_method_option"]:checked')?.value || 'cash';
+            paymentMethodInput.value = selectedPayment;
+        }
 
         // Panggil fungsi untuk menambahkan listener setelah HTML di-render
         addEventListenersToCartItems();
     }
 
-    paymentMethodRadios.forEach(radio => {
-        radio.addEventListener('change', (event) => {
-            const selectedValue = event.target.value;
-            if (selectedValue === 'qr') {
-                qrisDisplay.classList.remove('hidden');
-            } else {
-                qrisDisplay.classList.add('hidden');
-            }
-            paymentMethodInput.value = selectedValue;
+    // Hanya tambahkan event listener jika elemen paymentMethodRadios ada
+    if (paymentMethodRadios.length > 0) {
+        paymentMethodRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                const selectedValue = event.target.value;
+                if (qrisDisplay) { // Pastikan qrisDisplay ada
+                    if (selectedValue === 'qr') {
+                        qrisDisplay.classList.remove('hidden');
+                    } else {
+                        qrisDisplay.classList.add('hidden');
+                    }
+                }
+                if (paymentMethodInput) {
+                    paymentMethodInput.value = selectedValue;
+                }
+            });
         });
-    });
+    }
 
     renderCheckout();
 });

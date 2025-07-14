@@ -13,7 +13,7 @@
                     <div class="card-body">
                         @if ($errors->any())
                             <div class="alert alert-danger">
-                                <ul>
+                                <ul>d
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>
                                     @endforeach
@@ -21,7 +21,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('categories.store') }}" method="POST">
+                        <form action="{{ route('admin.categories.store') }}" method="POST">
                             @csrf
 
                             <div class="mb-3">
@@ -35,7 +35,7 @@
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg">Simpan Kategori</button>
-                                <a href="{{ route('categories.index') }}" class="btn btn-secondary btn-lg">Kembali</a>
+                                <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary btn-lg">Kembali</a>
                             </div>
                         </form>
                     </div>

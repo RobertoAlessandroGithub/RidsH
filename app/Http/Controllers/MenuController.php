@@ -61,7 +61,7 @@ class MenuController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan!');
+        return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil ditambahkan!');
     }
 
     /**
@@ -112,7 +112,7 @@ class MenuController extends Controller
             'image' => $imagePath,
         ]);
 
-        return redirect()->route('menu.index')->with('success', 'Menu berhasil diperbarui!');
+        return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil diperbarui!');
     }
 
     /**
@@ -124,7 +124,7 @@ class MenuController extends Controller
             Storage::disk('public')->delete($menu->image);
         }
         $menu->delete();
-        return redirect()->route('menu.index')->with('success', 'Menu berhasil dihapus!');
+        return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil dihapus!');
     }
 
     /**

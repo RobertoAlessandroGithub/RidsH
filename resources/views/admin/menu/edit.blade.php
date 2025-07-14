@@ -40,7 +40,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('menu.update', $menu->id) }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('admin.menu.update', $menu->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
@@ -92,7 +92,7 @@
 
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-info">Perbarui Menu</button>
-                                <a href="{{ route('menu.index') }}" class="btn btn-secondary">Batal</a>
+                                <a href="{{ route('admin.menu.index') }}" class="btn btn-secondary">Batal</a>
                             </div>
                         </form>
                     </div>

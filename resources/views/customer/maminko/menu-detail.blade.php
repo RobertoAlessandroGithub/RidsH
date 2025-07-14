@@ -252,11 +252,10 @@
         </div>
 
         <!-- Bagian Recommended Menu Lainnya -->
-        <div class="mt-8" data-aos="fade-up" data-aos-delay="200">
+        <!-- <div class="mt-8" data-aos="fade-up" data-aos-delay="200">
             <h2 class="text-2xl font-bold text-gray-900 mb-4">Rekomendasi Menu Lainnya</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @forelse($recommendedMenus as $recMenu)
-                    <div class="card-recommendation" onclick="window.location.href='{{ route('menu.detail', ['name' => urlencode($recMenu->name)]) }}'">
                         <img src="{{ $recMenu->image }}" alt="{{ $recMenu->name }}" class="w-full h-32 object-cover rounded-t-lg">
                         <div class="p-3">
                             <h3 class="font-semibold text-gray-800 mb-1 truncate">{{ $recMenu->name }}</h3>
@@ -269,7 +268,7 @@
                 @endforelse
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Fixed Bottom Bar for Add to Cart -->
     <div class="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-xl flex justify-between items-center z-50 rounded-t-xl">

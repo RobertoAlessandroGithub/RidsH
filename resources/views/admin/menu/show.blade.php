@@ -73,10 +73,10 @@
 
     {{-- Tombol Aksi --}}
     <div class="d-flex justify-content-start mt-4">
-        <a href="{{ route('menu.edit', $menu->id) }}" class="btn btn-info rounded-lg me-2">
+        <a href="{{ route('admin.menu.edit', $menu->id) }}" class="btn btn-info rounded-lg me-2">
             <i class="fas fa-edit me-1"></i> Edit Menu Ini
         </a>
-        <a href="{{ route('menu.index') }}" class="btn btn-secondary rounded-lg">
+        <a href="{{ route('admin.menu.index') }}" class="btn btn-secondary rounded-lg">
             <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Menu
         </a>
     </div>

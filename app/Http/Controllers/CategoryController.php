@@ -10,7 +10,8 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
+        // Sebaiknya gunakan paginasi untuk performa jika data banyak
+        $categories = Category::latest()->paginate(10);
         return view('admin.category.index', compact('categories'));
     }
 
@@ -19,28 +20,31 @@ class CategoryController extends Controller
         return view('admin.category.create');
     }
 
-  public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255|unique:categories,name',
-    ]);
-
-    try {
-        $category = Category::create([
-            'name' => $request->name,
-            // Slug otomatis di-generate oleh model
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name',
         ]);
 
-        return redirect()
-            ->route('categories.index')
-            ->with('success', 'Kategori berhasil ditambahkan!');
-            
-    } catch (\Exception $e) {
-        return back()
-            ->withInput()
-            ->with('error', 'Gagal menyimpan: '.$e->getMessage());
+        try {
+            // Slug akan otomatis dibuat oleh mutator di model (jika ada)
+            // atau bisa dibuat di sini jika tidak ada mutator.
+            Category::create([
+                'name' => $request->name,
+                'slug' => Str::slug($request->name) // Tambahkan slug secara eksplisit
+            ]);
+
+            // PERBAIKAN: Menggunakan nama rute yang benar
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('success', 'Kategori berhasil ditambahkan!');
+
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan: '.$e->getMessage());
+        }
     }
-}
 
     public function edit(Category $category)
     {
@@ -52,17 +56,22 @@ class CategoryController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
         ]);
+
         $validatedData['slug'] = Str::slug($validatedData['name']);
         $category->update($validatedData);
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+
+        // PERBAIKAN: Menggunakan nama rute yang benar
+        return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil diperbarui!');
     }
 
     public function destroy(Category $category)
     {
         try {
             $category->delete();
-            return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus!');
+            // PERBAIKAN: Menggunakan nama rute yang benar
+            return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dihapus!');
         } catch (\Exception $e) {
+            // Pesan error ini sudah bagus karena informatif
             return back()->with('error', 'Gagal menghapus kategori. Pastikan tidak ada menu yang menggunakan kategori ini.');
         }
     }

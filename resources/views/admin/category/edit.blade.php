@@ -39,7 +39,7 @@
                                 </div>
                             @endif
 
-                            <form action="{{ route('categories.update', $category->id) }}" method="POST">
+                            <form action="{{ route('admin.categories.update', $category->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
 
@@ -50,7 +50,7 @@
 
                                 <div class="d-grid gap-2 mt-4">
                                     <button type="submit" class="btn btn-info btn-lg">Perbarui Kategori</button>
-                                    <a href="{{ route('categories.index') }}" class="btn btn-secondary btn-lg">Batal</a>
+                                    <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary btn-lg">Batal</a>
                                 </div>
                             </form>
                         </div>

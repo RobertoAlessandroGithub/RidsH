@@ -172,8 +172,6 @@
                     style="height: 100%;"
                     data-category="{{ $menu->category->slug ?? 'uncategorized' }}" {{-- Menggunakan slug kategori --}}
                     data-name="{{ strtolower($menu->name) }}" {{-- Tambahkan data-name untuk pencarian --}}
-                    {{-- Perbaikan di sini: Tambahkan pengecekan $menu->slug agar tidak kosong --}}
-                    onclick="window.location.href='{{ !empty($menu->slug) ? route('menu.detail', ['slug' => $menu->slug]) : '#' }}'"
                 >
                     <img src="{{ asset('storage/' . ($menu->image ?? 'images/makanan.jpg')) }}" alt="{{ $menu->name }}" class="rounded-t-2xl">
 

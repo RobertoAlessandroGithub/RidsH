@@ -87,7 +87,7 @@
             <div class="card shadow mb-4 rounded-xl">
                 <div class="card-header py-3 flex justify-between items-center bg-gray-50 rounded-t-xl">
                     <h6 class="m-0 font-weight-bold text-primary">Pesanan Terbaru & Status</h6>
-                    <a href="{{ route('orders.index') }}" class="btn btn-sm btn-outline-primary rounded-lg">Lihat Semua Pesanan <i class="fas fa-arrow-right ml-1"></i></a>
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary rounded-lg">Lihat Semua Pesanan <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 <div class="card-body">
                     @if(count($recentOrders ?? []) > 0)
@@ -148,7 +148,6 @@
                         </table>
                     </div>
                     @else
-                        <p class="text-gray-600 text-center py-4">Belum ada pesanan terbaru.</p>
                     @endif
                 </div>
             </div>
@@ -161,7 +160,7 @@
             <div class="card shadow h-100 py-3 rounded-xl">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 text-gray-800"><i class="fas fa-utensils me-3 text-primary"></i>Manajemen Menu</h5>
-                    <a href="{{ route('menu.index') }}" class="btn btn-primary rounded-full">Kelola Menu <i class="fas fa-arrow-right ms-2"></i></a>
+                    <a href="{{ route('admin.menu.index') }}" class="btn btn-primary rounded-full">Kelola Menu <i class="fas fa-arrow-right ms-2"></i></a>
                 </div>
             </div>
         </div>
@@ -169,7 +168,7 @@
             <div class="card shadow h-100 py-3 rounded-xl">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 text-gray-800"><i class="fas fa-tags me-3 text-success"></i>Manajemen Kategori</h5>
-                    <a href="{{ route('categories.index') }}" class="btn btn-success rounded-full">Kelola Kategori <i class="fas fa-arrow-right ms-2"></i></a>
+                    <a href="{{ route('admin.categories.index') }}" class="btn btn-success rounded-full">Kelola Kategori <i class="fas fa-arrow-right ms-2"></i></a>
                 </div>
             </div>
         </div>

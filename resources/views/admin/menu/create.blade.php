@@ -78,7 +78,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('menu.store') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('admin.menu.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
 
                             <div class="mb-3">
@@ -120,7 +120,7 @@
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg">Simpan Item</button>
-                                <a href="{{ route('menu.index') }}" class="btn btn-secondary btn-lg">Kembali</a>
+                                <a href="{{ route('admin.menu.index') }}" class="btn btn-secondary btn-lg">Kembali</a>
                             </div>
                         </form>
                     </div>

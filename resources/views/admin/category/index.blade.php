@@ -23,7 +23,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4>Daftar Kategori</h4>
-            <a href="{{ route('categories.create') }}" class="btn btn-primary rounded-lg shadow-sm">
+            <a href="{{ route('admin.categories.create') }}" class="btn btn-primary rounded-lg shadow-sm">
                 <i class="fas fa-plus me-2"></i> Tambah Kategori Baru
             </a>
         </div>
@@ -49,7 +49,7 @@
                                     <td>{{ $category->slug }}</td>
                                     <td>{{ $category->created_at->format('d M Y') }}</td>
                                     <td>
-                                        <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-info btn-sm text-white rounded-full me-2">
+                                        <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-info btn-sm text-white rounded-full me-2">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                         <button type="button" class="btn btn-danger btn-sm rounded-full" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" data-id="{{ $category->id }}" data-name="{{ $category->name }}">

@@ -19,7 +19,7 @@
         {{-- PERBAIKAN DI SINI: Menambahkan Form Filter & Search --}}
         {{-- =================================================== --}}
         <div class="card-header py-3">
-            <form action="{{route('admin.order.index')}}" method="GET" class="row g-2 align-items-center">
+            <form action="{{route('admin.orders.index')}}" method="GET" class="row g-2 align-items-center">
                 <div class="col-md-4">
                     <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari Nama atau Kode Pesanan..." value="{{ request('search') }}">
                 </div>
@@ -57,6 +57,7 @@
                             <th>ID Pesanan</th>
                             <th>Pelanggan</th>
                             <th>No. Meja</th>
+                            <th>Nomor HP</th>
                             <th>Menu</th>
                             <th>Status</th>
                             <th>Tanggal</th>
@@ -69,6 +70,7 @@
                                 <td class="fw-bold align-middle">{{ $order->order_code ?? "#".$order->id }}</td>
                                 <td class="align-middle">{{ $order->customer_name ?? 'N/A' }}</td>
                                 <td class="align-middle">{{ $order->table_number ?? 'N/A' }}</td>
+                                 <td class="align-middle">{{ $order->customer_phone ?? 'N/A' }}</td>
                                 <td class="align-middle">
                                     @if($order->items->count())
                                         <ul class="mb-0 ps-3">
@@ -91,12 +93,12 @@
                                 <td class="align-middle">{{ $order->created_at->format('d M Y, H:i') }}</td>
                                 <td class="text-center align-middle">
                                     <div class="d-flex justify-content-center">
-                                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-secondary" title="Lihat Detail">
+                                        <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-sm btn-secondary" title="Lihat Detail">
                                             <i class="fas fa-eye"></i> Detail
                                         </a>
                                         {{-- Sebaiknya gunakan route terpisah untuk update status jika ada, misal 'orders.updateStatus' --}}
                                         {{-- Untuk sementara, ini akan mengarah ke route 'update' standar --}}
-                                        <form action="{{ route('orders.update', $order->id) }}" method="POST" class="d-inline ms-2">
+                                        <form action="{{ route('admin.orders.update', $order->id) }}" method="POST" class="d-inline ms-2">
                                             @csrf
                                             @method('PUT')
                                             <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="if(confirm('Ubah status?')) { this.form.submit(); }">

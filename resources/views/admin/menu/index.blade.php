@@ -24,7 +24,7 @@
     {{-- Bar Pencarian dan Tombol Tambah Menu --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <input type="text" id="searchInput" class="form-control form-control-sm w-25" placeholder="Cari menu...">
-        <a href="{{ route('menu.create') }}" class="btn btn-primary rounded-lg shadow-sm">
+        <a href="{{ route('admin.menu.create') }}" class="btn btn-primary rounded-lg shadow-sm">
             <i class="fas fa-plus me-2"></i> Tambah Menu Baru
         </a>
     </div>
@@ -60,19 +60,19 @@
 
                     {{-- Tombol Aksi Admin --}}
                     <div class="card-footer bg-white border-top-0 d-flex justify-content-around p-3">
-                        <a href="{{ route('menu.edit', $menu->id) }}" class="btn btn-info btn-sm text-white rounded-full">
+                        <a href="{{ route('admin.menu.edit', $menu->id) }}" class="btn btn-info btn-sm text-white rounded-full">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>
-                        {{-- TOMBOL TOGGLE STATUS --}}
+                        {{-- TOMBOL TOGGLE STATUS--}}
                         <button type="button" class="btn btn-sm rounded-full {{ $menu->is_active ? 'btn-warning' : 'btn-success' }}"
                                 data-bs-toggle="modal" data-bs-target="#toggleStatusModal"
-                                data-id="{{ $menu->id }}"
                                 data-name="{{ $menu->name }}"
-                                data-current-status="{{ $menu->is_active ? 'aktif' : 'nonaktif' }}">
+                                data-current-status="{{ $menu->is_active ? 'aktif' : 'nonaktif' }}"
+                                data-url="{{ route('admin.menu.toggle-status', $menu) }}"> {{-- Menambahkan data-url --}}
                             <i class="fas fa-toggle-{{ $menu->is_active ? 'off' : 'on' }} me-1"></i>
                             {{ $menu->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                         </button>
-                        <a href="{{ route('menu.show', $menu->id) }}" class="btn btn-secondary btn-sm rounded-full">
+                        <a href="{{ route('admin.menu.show', $menu->id) }}" class="btn btn-secondary btn-sm rounded-full">
                             <i class="fas fa-eye me-1"></i> Detail
                         </a>
                     </div>
@@ -81,7 +81,7 @@
         @empty
             <div class="col-12 text-center py-5">
                 <p class="text-gray-600">Belum ada menu yang terdaftar.</p>
-                <a href="{{ route('menu.create') }}" class="btn btn-success rounded-lg mt-3">
+                <a href="{{ route('admin.menu.create') }}" class="btn btn-success rounded-lg mt-3">
                     <i class="fas fa-plus me-2"></i> Tambah Menu Pertama Anda
                 </a>
             </div>
@@ -116,15 +116,15 @@
 
 @push('scripts')
 <script>
-    // AOS.init(); // Aktifkan jika Anda memiliki library AOS yang dimuat di layout admin
-
     document.addEventListener('DOMContentLoaded', function() {
         // Logika untuk mengisi data modal toggle status
         var toggleStatusModal = document.getElementById('toggleStatusModal');
         if (toggleStatusModal) {
             toggleStatusModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget; // Tombol yang memicu modal
-                var menuId = button.getAttribute('data-id');
+                
+                // PERBAIKAN 2: Ambil URL dari atribut data-url
+                var actionUrl = button.getAttribute('data-url');
                 var menuName = button.getAttribute('data-name');
                 var currentStatus = button.getAttribute('data-current-status');
 
@@ -150,9 +150,9 @@
                     if (confirmToggleButton) confirmToggleButton.className = 'btn btn-success rounded-lg';
                 }
 
-                // Atur action form untuk POST ke route toggle-status
+                // PERBAIKAN 3: Atur action form dengan URL yang sudah benar
                 if (toggleStatusForm) {
-                    toggleStatusForm.action = `/menu/${menuId}/toggle-status`;
+                    toggleStatusForm.action = actionUrl;
                 }
             });
         }
