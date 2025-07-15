@@ -110,7 +110,7 @@
                         modalBodyInput.textContent = categoryName;
                     }
                     if (deleteForm) {
-                        deleteForm.action = `/categories/${categoryId}`; // URL untuk hapus kategori
+                        deleteForm.action = `/admin/categories/${categoryId}`; // URL untuk hapus kategori
                     }
                 });
             }
