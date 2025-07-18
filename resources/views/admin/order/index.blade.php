@@ -67,7 +67,7 @@
                     <tbody>
                         @forelse ($orders as $order)
                             <tr>
-                                <td class="fw-bold align-middle">{{ $order->order_code ?? "#".$order->id }}</td>
+                                <td class="fw-bold align-middle">{{"MMK-".$order->id}}</td>
                                 <td class="align-middle">{{ $order->customer_name ?? 'N/A' }}</td>
                                 <td class="align-middle">{{ $order->table_number ?? 'N/A' }}</td>
                                  <td class="align-middle">{{ $order->customer_phone ?? 'N/A' }}</td>

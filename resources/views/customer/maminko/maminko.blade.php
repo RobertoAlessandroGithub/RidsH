@@ -177,7 +177,7 @@
 
                     <div class="menu-info p-4 flex-1">
                         <h3 class="text-lg font-semibold">{{ $menu->name }}</h3>
-                        <p class="text-sm text-gray-500">{{ $menu->description }}</p>
+                              <p class="text-sm text-gray-500">{{ $menu->description }}</p>
                         <p class="text-orange-500 font-bold mt-2">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
                     </div>
 
@@ -439,39 +439,6 @@
 
         </script>
 
-        <footer class="bg-gray-900 text-white text-sm mt-10">
-            <div class="max-w-6xl mx-auto py-10 px-4 grid md:grid-cols-4 gap-8">
-                <div>
-                    <h4 class="text-lg font-bold mb-4">Rid's Hotel</h4>
-                    <p>Jalan Bahagia No. 123<br>Palembang, Indonesia</p>
-                </div>
-                <div>
-                    <h4 class="text-lg font-bold mb-4">About</h4>
-                    <ul>
-                        <li><a href="/" class="hover:underline">Home</a></li>
-                        <li><a href="/rooms" class="hover:underline">Rooms</a></li>
-                        <li><a href="/facilities" class="hover:underline">Facilities</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-lg font-bold mb-4">Help</h4>
-                    <ul>
-                        <li><a href="/contact" class="hover:underline">Contact Us</a></li>
-                        <li><a href="#" class="hover:underline">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:underline">Terms</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-lg font-bold mb-4">Follow Us</h4>
-                    <div class="flex gap-4">
-                        <a href="#" class="hover:text-purple-400">Facebook</a>
-                        <a href="#" class="hover:text-purple-400">Instagram</a>
-                        <a href="#" class="hover:text-purple-400">Twitter</a>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center py-4 border-t border-gray-700">© 2025 Rid's Hotel. All rights reserved.</div>
-        </footer>
 
     </body>
     </html>

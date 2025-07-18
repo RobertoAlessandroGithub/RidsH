@@ -60,9 +60,18 @@
                                 <label for="price" class="form-label">Harga:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
-                                    <input type="number" class="form-control" id="price" name="price" value="{{ old('price', $menu->price) }}" min="0" step="500" required>
+                                    <input type="number" 
+                                        class="form-control" 
+                                        id="price" 
+                                        name="price" 
+                                        value="{{ old('price') }}" 
+                                        min="0" 
+                                        step="any" 
+                                        placeholder="Contoh: 1234" 
+                                        required>
                                 </div>
                             </div>
+
 
                             {{-- Preview Gambar Saat Ini --}}
                             <div class="mb-3">

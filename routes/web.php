@@ -33,7 +33,7 @@ use App\Http\Middleware\AdminMiddleware;
 
 // Halaman Utama
 Route::get('/', function () {
-    return view('layouts.main');
+    return redirect()->route('maminko.index'); // Mengarahkan ke route dengan nama 'maminko.index'
 })->name('home');
 
 // Login & Register

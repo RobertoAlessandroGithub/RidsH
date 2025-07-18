@@ -94,13 +94,21 @@
                             {{-- Field detailed_description DIHAPUS --}}
                             {{-- Field detailed_description DIHAPUS --}}
 
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Harga:</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" class="form-control" id="price" name="price" value="{{ old('price') }}" min="0" step="500" placeholder="Contoh: 25000" required>
-                                </div>
-                            </div>
+                             <div class="mb-3">
+                                    <label for="price" class="form-label">Harga:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" 
+                                            class="form-control" 
+                                            id="price" 
+                                            name="price" 
+                                            value="{{ old('price') }}" 
+                                            min="0" 
+                                            step="any" 
+                                            placeholder="Contoh: 1234" 
+                                            required>
+                        </div>
+                    </div>
 
                                  <select class="form-select" id="category_id" name="category_id">
                         <option value="">Pilih kategori</option>

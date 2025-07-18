@@ -5,7 +5,7 @@
 @section('title', 'Kelola Menu Restoran')
 
 @section('content')
-    <h1 class="h3 mb-4 text-gray-800">Manajemen Item Menu</h1>
+    <h1 class="h3 mb-4 text-gray-800">Manajemen Menu</h1>
 
     {{-- Notifikasi Sukses/Error --}}
     @if (session('success'))
