@@ -101,6 +101,7 @@ Route::middleware(['auth', AdminMiddleware::class]) // Menggunakan 'auth' dan mi
 
     // Dashboard: /admin/dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('cashier/payments', [OrderController::class, 'cashierPayments'])->name('cashier.payments');
 
     // Menu: /admin/menu, /admin/menu/create, dll.
     Route::resource('menu', MenuController::class);

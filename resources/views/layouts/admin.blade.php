@@ -138,6 +138,9 @@
                 <a href="{{ route('admin.orders.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-clipboard-list"></i>Manajemen Pesanan
                 </a>
+                <a href="{{ route('admin.cashier.payments') }}" class="list-group-item">
+                    <i class="fas fa-fw fa-clipboard-list"></i>Manajemen Pembayaran
+                </a>
                 <a href="{{ route('admin.reports.index') }}" class="list-group-item">
                     <i class="fas fa-fw fa-chart-line"></i>Laporan
                 </a>

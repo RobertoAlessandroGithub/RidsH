@@ -64,17 +64,23 @@
                             <div class="d-flex flex-column h-100">
                                 <div class="mb-3">
                                     <h4 class="fw-bold mb-1">#{{ $order->id }} - {{ $order->customer_name ?? 'N/A' }}</h4>
-                                    <p class="fs-5 mb-1">Meja: <strong>{{ $order->table_number ?? '-' }}</strong></p>
-                                    <p class="fs-6">HP: {{ $order->customer_phone ?? '-' }}</p>
+                                    <p class="fs-3 mb-1">Meja: <strong>{{ $order->table_number ?? '-' }}</strong></p>
+                                    <p class="fs-4">HP: {{ $order->customer_phone ?? '-' }}</p>
+                                    @if ($order->notes)
+                                        <p class="fs-3 mb-1">Catatan: <em>{{ $order->notes }}</em></p>
+                                    @endif
+                                    @if ($order->status === 'cancelled' && $order->cancel_notes)
+                                        <p class="fs-3 mb-1 text-danger">Catatan Pembatalan: <em>{{ $order->cancel_notes }}</em></p>
+                                    @endif
                                 </div>
 
                                 <div class="mb-3">
                                     <h5 class="fw-semibold">Menu:</h5>
                                     <ul class="ps-3 fs-2">
-                                        @foreach ($order->items->take(3) as $item)
+                                        @foreach ($order->items->take(10) as $item)
                                             <li>{{ $item->quantity }}x {{ $item->menu->name ?? '-' }}</li>
                                         @endforeach
-                                        @if ($order->items->count() > 3)
+                                        @if ($order->items->count() > 10)
                                             <li class="text-muted"><em>+ {{ $order->items->count() - 3 }} item lainnya...</em></li>
                                         @endif
                                     </ul>
@@ -92,17 +98,14 @@
                                             <i class="fas fa-eye"></i> Detail
                                         </a>
                                         {{-- The form for status update --}}
-                                        <form id="statusUpdateForm-{{ $order->id }}" action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <select name="status" class="form-select form-select-sm order-status-select" data-order-id="{{ $order->id }}">
-                                                <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                <option value="preparing" {{ $order->status == 'preparing' ? 'selected' : '' }}>Preparing</option>
-                                                <option value="ready" {{ $order->status == 'ready' ? 'selected' : '' }}>Ready</option>
-                                                <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                                <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                            </select>
-                                        </form>
+                                        {{-- The select element will trigger the modal for 'cancelled' status --}}
+                                        <select name="status" class="form-select form-select-sm order-status-select" data-order-id="{{ $order->id }}">
+                                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="preparing" {{ $order->status == 'preparing' ? 'selected' : '' }}>Preparing</option>
+                                            <option value="ready" {{ $order->status == 'ready' ? 'selected' : '' }}>Ready</option>
+                                            <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -121,37 +124,90 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderModalLabel">Batalkan Pesanan <span id="modalOrderId"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="cancelOrderForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin membatalkan pesanan ini? Aksi ini tidak dapat dibatalkan.</p>
+                    <div class="mb-3">
+                        <label for="cancel_notes" class="form-label">Catatan Pembatalan (opsional):</label>
+                        <textarea class="form-control" id="cancel_notes" name="cancel_notes" rows="3"></textarea>
+                    </div>
+                    <input type="hidden" name="status" value="cancelled">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Konfirmasi Pembatalan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const statusSelects = document.querySelectorAll('.order-status-select');
+        const cancelOrderModal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+        const modalOrderIdSpan = document.getElementById('modalOrderId');
+        const cancelOrderForm = document.getElementById('cancelOrderForm');
+        const cancelNotesTextarea = document.getElementById('cancel_notes');
 
         statusSelects.forEach(select => {
-            // Store the initial status to revert if the user cancels the confirmation
             select.setAttribute('data-original-status', select.value);
 
             select.addEventListener('change', function() {
                 const selectedStatus = this.value;
                 const orderId = this.dataset.orderId;
-                let confirmationMessage = '';
+                const originalStatus = this.getAttribute('data-original-status');
 
                 if (selectedStatus === 'cancelled') {
-                    confirmationMessage = 'Apakah Anda yakin ingin membatalkan pesanan ini? Aksi ini tidak dapat dibatalkan.';
-                } else {
-                    confirmationMessage = `Apakah Anda yakin ingin mengubah status pesanan menjadi '${selectedStatus}'?`;
-                }
-
-                if (confirm(confirmationMessage)) {
-                    // Submit the form associated with this select
-                    document.getElementById(`statusUpdateForm-${orderId}`).submit();
-                } else {
-                    // Revert to the original selected value if canceled
-                    const originalStatus = this.getAttribute('data-original-status');
+                    // Set the order ID in the modal title
+                    modalOrderIdSpan.textContent = `#${orderId}`;
+                    // Set the form action for the modal
+                    cancelOrderForm.action = `/admin/orders/${orderId}`; // Adjust this route if needed
+                    // Clear previous notes
+                    cancelNotesTextarea.value = '';
+                    // Show the modal
+                    cancelOrderModal.show();
+                    // Revert the select value temporarily to the original until modal is confirmed
                     this.value = originalStatus;
+                } else {
+                    // For other status changes, use a direct confirmation and submission
+                    let confirmationMessage = `Apakah Anda yakin ingin mengubah status pesanan menjadi '${selectedStatus}'?`;
+                    if (confirm(confirmationMessage)) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/orders/${orderId}`; // Adjust this route if needed
+                        form.innerHTML = `
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="status" value="${selectedStatus}">
+                        `;
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        // Revert to the original selected value if canceled
+                        this.value = originalStatus;
+                    }
                 }
             });
+        });
+
+        // Event listener for when the modal is hidden
+        cancelOrderModal._element.addEventListener('hidden.bs.modal', function () {
+            // No need to revert select value here as it's already reverted
+            // The form will only be submitted if the user confirms inside the modal
         });
     });
 </script>
