@@ -15,14 +15,16 @@ class AdminMiddleware
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Anda harus login dulu.');
         }
 
-        if (Auth::user()->role !== 'admin') {
-            return redirect('/')->with('error', 'Anda bukan admin.');
+        $role = Auth::user()->role;
+
+        if (!in_array($role, ['admin', 'kasir'])) {
+            return redirect('/')->with('error', 'Akses hanya untuk admin atau kasir.');
         }
 
         return $next($request);

@@ -15,6 +15,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CashierMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -130,3 +131,47 @@ Route::middleware(['auth', AdminMiddleware::class]) // Menggunakan 'auth' dan mi
         Route::put('/', [SettingController::class, 'update'])->name('update');
     });
 });
+Route::middleware(['auth', AdminMiddleware::class]) // Menggunakan 'auth' dan middleware admin Anda
+    ->prefix('admin') // Semua URL diawali dengan /admin
+    ->name('admin.') // Semua nama rute diawali dengan admin.
+    ->group(function () {
+
+    // Dashboard: /admin/dashboard
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('cashier/payments', [OrderController::class, 'cashierPayments'])->name('cashier.payments');
+
+    // Menu: /admin/menu, /admin/menu/create, dll.
+    Route::resource('menu', MenuController::class);
+    Route::post('menu/{menu}/toggle-status', [MenuController::class, 'toggleActiveStatus'])->name('menu.toggle-status');
+
+    // Categories: /admin/categories, /admin/categories/create, dll.
+    Route::resource('categories', CategoryController::class);
+
+    // Orders: /admin/orders, /admin/orders/{id}, dll.
+    Route::resource('orders', OrderController::class);
+    // PERUBAHAN: Memindahkan dan memperbaiki rute updateItems ke dalam grup yang benar
+    Route::put('/orders/{order}/update-items', [OrderController::class, 'updateItems'])->name('orders.updateItems');
+
+    // Users (jika ada manajemen user oleh admin)
+    // Route::resource('users', UserController::class);
+
+    // Reports: /admin/reports, /admin/reports/daily-sales
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('daily-sales', [ReportController::class, 'dailySales'])->name('daily-sales');
+    });
+
+    // Settings: /admin/settings
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingController::class, 'index'])->name('index');
+        Route::put('/', [SettingController::class, 'update'])->name('update');
+    });
+});
+
+Route::middleware(['auth', CashierMiddleware::class]) // Middleware auth + role kasir
+    ->prefix('cashier') // Semua URL diawali dengan /cashier
+    ->name('cashier.') // Semua nama rute diawali dengan cashier.
+    ->group(function () {
+        // Pembayaran kasir: /cashier/payment
+        Route::get('/payment', [OrderController::class, 'cashierPayments'])->name('payment');
+    });

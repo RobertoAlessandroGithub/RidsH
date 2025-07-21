@@ -136,21 +136,25 @@
                         <a href="{{ route('admin.dashboard') }}" class="list-group-item">
                             <i class="fas fa-fw fa-tachometer-alt"></i>Dashboard
                         </a>
-                        <a href="{{ route('admin.menu.index') }}" class="list-group-item">
-                            <i class="fas fa-fw fa-utensils"></i>Manajemen Menu
-                        </a>
-                        <a href="{{ route('admin.menu.create') }}" class="list-group-item">
-                            <i class="fas fa-fw fa-plus-circle"></i>Tambah Menu
-                        </a>
-                        <a href="{{ route('admin.categories.index') }}" class="list-group-item">
-                            <i class="fas fa-fw fa-tags"></i>Manajemen Kategori
-                        </a>
-                        <a href="{{ route('admin.orders.index') }}" class="list-group-item">
-                            <i class="fas fa-fw fa-clipboard-list"></i>Manajemen Pesanan
-                        </a>
-                        <a href="{{ route('admin.cashier.payments') }}" class="list-group-item">
-                            <i class="fas fa-fw fa-clipboard-list"></i>Manajemen Pembayaran
-                        </a>
+                     @if(Auth::check() && Auth::user()->role === 'admin')
+    <a href="{{ route('admin.menu.index') }}" class="list-group-item">
+        <i class="fas fa-fw fa-utensils"></i>Manajemen Menu
+    </a>
+    <a href="{{ route('admin.menu.create') }}" class="list-group-item">
+        <i class="fas fa-fw fa-plus-circle"></i>Tambah Menu
+    </a>
+    <a href="{{ route('admin.categories.index') }}" class="list-group-item">
+        <i class="fas fa-fw fa-tags"></i>Manajemen Kategori
+    </a>
+    <a href="{{ route('admin.orders.index') }}" class="list-group-item">
+        <i class="fas fa-fw fa-clipboard-list"></i>Manajemen Pesanan
+    </a>
+@endif
+                    @if(Auth::check() && Auth::user()->role === 'kasir')
+                    <a href="{{ route('admin.cashier.payments') }}" class="list-group-item">
+                        <i class="fas fa-fw fa-cash-register"></i>Manajemen Pembayaran
+                    </a>
+                    @endif
                         <a href="{{ route('admin.reports.index') }}" class="list-group-item">
                             <i class="fas fa-fw fa-chart-line"></i>Laporan
                         </a>
