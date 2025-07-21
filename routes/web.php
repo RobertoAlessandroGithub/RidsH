@@ -112,6 +112,8 @@ Route::middleware(['auth', AdminMiddleware::class]) // Menggunakan 'auth' dan mi
 
     // Orders: /admin/orders, /admin/orders/{id}, dll.
     Route::resource('orders', OrderController::class);
+    // PERUBAHAN: Memindahkan dan memperbaiki rute updateItems ke dalam grup yang benar
+    Route::put('/orders/{order}/update-items', [OrderController::class, 'updateItems'])->name('orders.updateItems');
 
     // Users (jika ada manajemen user oleh admin)
     // Route::resource('users', UserController::class);

@@ -34,8 +34,6 @@
                         <select class="form-select" id="status" name="status">
                             <option value="">Semua Status</option>
                             <option value="pending" {{ ($currentFilters['status'] ?? '') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="preparing" {{ ($currentFilters['status'] ?? '') == 'preparing' ? 'selected' : '' }}>Preparing</option>
-                            <option value="ready" {{ ($currentFilters['status'] ?? '') == 'ready' ? 'selected' : '' }}>Ready</option>
                             <option value="completed" {{ ($currentFilters['status'] ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
                             <option value="cancelled" {{ ($currentFilters['status'] ?? '') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
@@ -72,7 +70,6 @@
                     <thead>
                         <tr>
                             <th>ID Pesanan</th>
-                            <th>Kode Pesanan</th>
                             <th>Nama Pelanggan</th>
                             <th>Nomor HP</th> {{-- KOLOM BARU DITAMBAHKAN --}}
                             <th>No. Meja</th>
@@ -87,9 +84,8 @@
                         @forelse ($orders as $order)
                             <tr>
                                 <td>{{ $order->id }}</td>
-                                <td>{{ $order->order_code ?? 'N/A' }}</td>
                                 <td>{{ $order->customer_name }}</td>
-                                <td>{{ $order->customer_phone }}</td> 
+                                <td>{{ $order->customer_phone }}</td>
                                 <td>{{ $order->table_number ?? '-' }}</td>
                                 <td>Rp{{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                 <td>

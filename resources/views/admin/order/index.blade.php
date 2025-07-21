@@ -32,8 +32,6 @@
                 <select name="status" class="form-select form-select-lg">
                     <option value="">-- Semua Status --</option>
                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="preparing" {{ request('status') == 'preparing' ? 'selected' : '' }}>Preparing</option>
-                    <option value="ready" {{ request('status') == 'ready' ? 'selected' : '' }}>Ready</option>
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>

@@ -6,6 +6,23 @@
 @section('content')
     <h1 class="h3 mb-4 text-gray-800">Dashboard Restoran & Pesanan</h1>
 
+    {{-- PERUBAHAN: Tambahkan bagian ini untuk menampilkan notifikasi session --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-lg" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-lg" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    {{-- Akhir dari bagian notifikasi --}}
+
+
     {{-- Bagian Ringkasan Status Pesanan --}}
     <div class="row">
         {{-- Kartu Pesanan Baru (Pending) --}}
@@ -131,11 +148,11 @@
                                                 Ubah Status
                                             </button>
                                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $order->id }}">
-                                                <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'preparing')">Sedang Dimasak</a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'ready')">Siap Diantar</a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'completed')">Selesai</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); updateOrderStatus({{ $order->id }}, 'preparing')">Sedang Dimasak</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); updateOrderStatus({{ $order->id }}, 'ready')">Siap Diantar</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); updateOrderStatus({{ $order->id }}, 'completed')">Selesai</a></li>
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">Batalkan</a></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); updateOrderStatus({{ $order->id }}, 'cancelled')">Batalkan</a></li>
                                             </ul>
                                         </div>
                                         <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info rounded-lg ms-2">
@@ -148,6 +165,7 @@
                         </table>
                     </div>
                     @else
+                        <p class="text-center text-gray-500 py-4">Belum ada pesanan terbaru.</p>
                     @endif
                 </div>
             </div>
@@ -183,12 +201,14 @@
     <script>
         // Fungsi untuk mengupdate status pesanan
         function updateOrderStatus(orderId, newStatus) {
-            if (confirm(`Apakah Anda yakin ingin mengubah status pesanan ${orderId} menjadi ${newStatus.toUpperCase()}?`)) {
+            // Menggunakan modal konfirmasi yang lebih baik jika ada, atau confirm bawaan
+            if (confirm(`Apakah Anda yakin ingin mengubah status pesanan #${orderId} menjadi "${newStatus.toUpperCase()}"?`)) {
                 const form = document.getElementById('update-order-status-form');
                 const statusInput = document.getElementById('order-status-input');
 
                 statusInput.value = newStatus;
-                form.action = `/orders/${orderId}`; // Sesuaikan dengan route update Anda
+                // Pastikan route untuk update status sudah benar
+                form.action = `{{ url('admin/orders') }}/${orderId}/status`;
                 form.submit();
             }
         }

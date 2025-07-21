@@ -42,7 +42,7 @@ class OrderController extends Controller
                   ->orWhere('id', $searchTerm);
             });
         }
-        
+
         // Filter Tanggal
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
@@ -63,62 +63,66 @@ class OrderController extends Controller
     /**
      * Store a newly created order in storage.
      */
-     public function store(Request $request)
-{
-    $request->validate([
-        'customer_name' => 'required|string|max:255',
-        'customer_phone' => 'nullable|string|max:20', // Tambahkan validasi untuk nomor HP
-        'table_number' => 'nullable|string|max:255',
-        'order_notes' => 'nullable|string',
-        'payment_method' => 'required|string|in:cash,transfer',
-        'final_total' => 'required|numeric|min:0',
-        'cart_data' => 'required|json',
-    ]);
-
-    DB::beginTransaction();
-    try {
-        // Generate order code
-        $today = now()->format('Ymd');
-        $latestOrder = Order::whereDate('created_at', today())->latest()->first();
-        $nextOrderNum = $latestOrder ? (int)substr($latestOrder->order_code, -4) + 1 : 1;
-        $orderCode = 'ORD-' . $today . '-' . str_pad($nextOrderNum, 4, '0', STR_PAD_LEFT);
-
-        $order = Order::create([
-            'order_code' => $orderCode,
-            'customer_name' => $request->customer_name,
-            'customer_phone' => $request->customer_phone, // Tambahkan ini
-            'table_number' => $request->table_number,
-            'notes' => $request->order_notes,
-            'payment_method' => $request->payment_method,
-            'total_amount' => $request->final_total,
-            'status' => 'pending', // Status awal
-            'is_paid' => false, // Default: belum dibayar saat dibuat
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'nullable|string|max:20', // Tambahkan validasi untuk nomor HP
+            'table_number' => 'nullable|string|max:255',
+            'order_notes' => 'nullable|string',
+            'payment_method' => 'required|string|in:cash,transfer',
+            'final_total' => 'required|numeric|min:0',
+            'cart_data' => 'required|json',
         ]);
 
-        $cart = json_decode($request->cart_data, true);
-        foreach ($cart as $name => $item) {
-            $menu = Menu::where('name', $name)->firstOrFail();
-            OrderItem::create([
-                'order_id' => $order->id,
-                'menu_id' => $menu->id,
-                'quantity' => $item['qty'],
-                'price' => $menu->price, // Pastikan harga diambil dari menu aslinya
+        DB::beginTransaction();
+        try {
+            // Generate order code
+            $today = now()->format('Ymd');
+            $latestOrder = Order::whereDate('created_at', today())->latest()->first();
+            $nextOrderNum = $latestOrder ? (int)substr($latestOrder->order_code, -4) + 1 : 1;
+            $orderCode = 'ORD-' . $today . '-' . str_pad($nextOrderNum, 4, '0', STR_PAD_LEFT);
+
+            $order = Order::create([
+                'order_code' => $orderCode,
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone, // Tambahkan ini
+                'table_number' => $request->table_number,
+                'notes' => $request->order_notes,
+                'payment_method' => $request->payment_method,
+                'total_amount' => $request->final_total,
+                'status' => 'pending', // Status awal
+                'is_paid' => false, // Default: belum dibayar saat dibuat
             ]);
+
+            $cart = json_decode($request->cart_data, true);
+            foreach ($cart as $name => $item) {
+                $menu = Menu::where('name', $name)->firstOrFail();
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_id' => $menu->id,
+                    'quantity' => $item['qty'],
+                    'price' => $menu->price, // Pastikan harga diambil dari menu aslinya
+                ]);
+            }
+            DB::commit();
+            return redirect()->route('checkout.success')->with('order_code', $orderCode);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Pesanan gagal: ' . $e->getMessage());
         }
-        DB::commit();
-        return redirect()->route('checkout.success')->with('order_code', $orderCode);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'Pesanan gagal: ' . $e->getMessage());
     }
-}
+
     public function show(Order $order)
     {
         $order->load('items.menu');
-        return view('admin.order.show', compact('order'));
+
+        $allMenus = Menu::orderBy('name')->get();
+
+        return view('admin.order.show', compact('order', 'allMenus'));
     }
 
-     public function update(Request $request, Order $order)
+    public function update(Request $request, Order $order)
     {
         $rules = [];
         if ($request->has('status')) {
@@ -127,7 +131,6 @@ class OrderController extends Controller
         if ($request->has('is_paid')) {
             $rules['is_paid'] = 'required|boolean';
         }
-        // Tambahkan validasi lain jika ada field lain yang bisa diupdate di sini
 
         $validatedData = $request->validate($rules);
 
@@ -137,33 +140,27 @@ class OrderController extends Controller
         if ($request->has('status')) {
             $order->status = $request->status;
         }
-        // Pastikan menyimpan perubahan setelah update
         $order->save();
 
         return back()->with('success', 'Pesanan berhasil diperbarui!');
     }
 
-     public function cashierPayments(Request $request)
+    public function cashierPayments(Request $request)
     {
         $query = Order::with('items.menu')->latest();
 
-        // Default: Tampilkan pesanan yang belum dibayar atau status 'pending'
-        // Namun, biarkan filter 'status' dan 'is_paid' dari request menimpa default
         if (!$request->filled('status') && !$request->filled('is_paid')) {
             $query->where('is_paid', false);
         }
 
-        // Filter berdasarkan Status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan status pembayaran
         if ($request->filled('is_paid')) {
             $query->where('is_paid', (bool)$request->is_paid);
         }
 
-        // Pencarian berdasarkan Nama, ID, atau Kode Pesanan
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
@@ -181,69 +178,43 @@ class OrderController extends Controller
 
         $orders = $query->paginate(15)->withQueryString();
 
-        // Pass current filter values to the view for form persistence
         $currentFilters = $request->only(['status', 'is_paid', 'search', 'date_from', 'date_to']);
 
         return view('admin.cashier.payments.index', compact('orders', 'currentFilters'));
     }
 
-     public function updateItems(Request $request, Order $order)
+    // ======================================================================
+    // PERUBAHAN DI SINI
+    // ======================================================================
+    public function updateItems(Request $request, Order $order)
     {
         $request->validate([
-            'items' => 'nullable|array',
-            'items.*.order_item_id' => 'sometimes|exists:order_items,id',
-            'items.*.menu_id' => 'required|exists:menus,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|numeric|min:0',
-            'notes' => 'nullable|string', // Untuk catatan pesanan
-            'table_number' => 'nullable|string|max:255', // Untuk nomor meja
-            'customer_name' => 'required|string|max:255', // Untuk nama pelanggan
+            'items' => 'required|json',
         ]);
 
         DB::beginTransaction();
         try {
-            // Update order details (customer_name, table_number, notes)
-            $order->update([
-                'customer_name' => $request->customer_name,
-                'table_number' => $request->table_number,
-                'notes' => $request->notes,
-            ]);
+            // Hapus semua item lama dari pesanan ini
+            $order->items()->delete();
 
-            // Hapus semua item lama yang mungkin sudah tidak ada di request
-            $existingItemIds = $order->items->pluck('id')->toArray();
-            $updatedItemIds = [];
-            foreach ($request->items as $itemData) {
-                if (isset($itemData['order_item_id'])) {
-                    $updatedItemIds[] = $itemData['order_item_id'];
-                }
-            }
-            $itemsToDelete = array_diff($existingItemIds, $updatedItemIds);
-            OrderItem::whereIn('id', $itemsToDelete)->delete();
-
+            $newItems = json_decode($request->items, true);
             $newTotalAmount = 0;
-            if ($request->has('items') && is_array($request->items)) {
-                foreach ($request->items as $itemData) {
-                    $menu = Menu::find($itemData['menu_id']);
-                    if (!$menu) {
-                        throw new \Exception('Menu tidak ditemukan.');
-                    }
 
-                    $orderItem = OrderItem::updateOrCreate(
-                        [
-                            'id' => $itemData['order_item_id'] ?? null, // Gunakan ID jika ada untuk update
-                            'order_id' => $order->id,
-                            'menu_id' => $itemData['menu_id']
-                        ],
-                        [
-                            'quantity' => $itemData['quantity'],
-                            'price' => $menu->price // Pastikan harga diambil dari menu aslinya
-                        ]
-                    );
-                    $newTotalAmount += $orderItem->quantity * $orderItem->price;
+            if (is_array($newItems)) {
+                foreach ($newItems as $itemData) {
+                    // Buat kembali item pesanan dengan data yang baru
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'menu_id' => $itemData['menu_id'],
+                        'quantity' => $itemData['quantity'],
+                        'price' => $itemData['price'],
+                    ]);
+                    // Hitung ulang total
+                    $newTotalAmount += $itemData['quantity'] * $itemData['price'];
                 }
             }
 
-            // Perbarui total_amount di Order
+            // Update total harga di pesanan utama
             $order->total_amount = $newTotalAmount;
             $order->save();
 
@@ -254,4 +225,7 @@ class OrderController extends Controller
             return back()->with('error', 'Gagal memperbarui pesanan: ' . $e->getMessage());
         }
     }
+    // ======================================================================
+    // AKHIR DARI PERUBAHAN
+    // ======================================================================
 }
